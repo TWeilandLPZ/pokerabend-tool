@@ -488,6 +488,48 @@ function evaluate7(cards7){
   }
   return best;
 }
+
+// Generic best-of-N evaluator (N = 5, 6 or 7) used only for the "current hand" display —
+// not in the hot simulation loop, so a simple recursive combination search is fine here.
+function combinations5(arr){
+  const n=arr.length;
+  if(n===5) return [arr];
+  const result=[];
+  function rec(start, combo){
+    if(combo.length===5){ result.push(combo.slice()); return; }
+    for(let i=start;i<n;i++){
+      combo.push(arr[i]);
+      rec(i+1, combo);
+      combo.pop();
+    }
+  }
+  rec(0, []);
+  return result;
+}
+function evaluateBest(cards){
+  let best=null;
+  for(const c of combinations5(cards)){
+    const score = evaluate5(c);
+    if(best===null || cmpScore(score,best)>0) best=score;
+  }
+  return best;
+}
+const HAND_TYPE_NAMES = ['Höchste Karte','Ein Paar','Zwei Paare','Drilling','Straße','Flush','Full House','Vierling','Straight Flush'];
+function describeHandType(score){
+  const type = score[0];
+  const name = HAND_TYPE_NAMES[type];
+  let detail = '';
+  if(type===0) detail = rankLabel(score[1]) + ' hoch';
+  else if(type===1) detail = rankLabel(score[1]);
+  else if(type===2) detail = rankLabel(score[1]) + ' & ' + rankLabel(score[2]);
+  else if(type===3) detail = rankLabel(score[1]);
+  else if(type===4) detail = rankLabel(score[1]) + ' hoch';
+  else if(type===5) detail = rankLabel(score[1]) + ' hoch';
+  else if(type===6) detail = rankLabel(score[1]) + ' über ' + rankLabel(score[2]);
+  else if(type===7) detail = rankLabel(score[1]);
+  else if(type===8) detail = rankLabel(score[1]) + ' hoch';
+  return detail ? `${name} (${detail})` : name;
+}
 function computeHeroCards(hand){
   // Suits are picked randomly each time — the exact suit never affects
   // equity (the deck is symmetric), this only adds visual variety so
@@ -825,8 +867,16 @@ function runEquity(){
     const losePct = res.lose/res.trials*100;
     const advice = getAdvice(pos, winPct + tiePct/2, potInfo, currentStreet);
 
+    const knownCards = heroCardObjs.concat(board);
+    let currentHandLine = '';
+    if(knownCards.length>=5){
+      const bestScore = evaluateBest(knownCards);
+      currentHandLine = `<div class="stat-row"><span class="label">Aktuelle Hand</span><span class="value" style="font-size:0.95rem;">${describeHandType(bestScore)}</span></div>`;
+    }
+
     document.getElementById('resultsBody').innerHTML = `
       <div style="font-family:Menlo,monospace;font-size:1.02rem;margin-bottom:4px;">${selectedHandDef.label} · ${opponents} Gegner · ${pos}</div>
+      ${currentHandLine}
       <div class="stat-row"><span class="label">Sieg</span><span class="value">${winPct.toFixed(1)}%</span></div>
       <div class="stat-row"><span class="label">Unentschieden</span><span class="value">${tiePct.toFixed(1)}%</span></div>
       <div class="stat-row"><span class="label">Niederlage</span><span class="value">${losePct.toFixed(1)}%</span></div>
