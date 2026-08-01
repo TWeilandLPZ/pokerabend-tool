@@ -117,6 +117,44 @@
     border:1.5px dashed rgba(234,227,211,0.25);
     box-shadow:none;
   }
+  .card.editable{ cursor:pointer; transition:transform 0.08s ease, box-shadow 0.08s ease; }
+  .card.editable:hover{ transform:translateY(-2px); box-shadow:0 5px 10px rgba(0,0,0,0.5); }
+  .card.empty.editable{ border-color:rgba(201,162,75,0.6); }
+  .card.empty.editable:hover{ border-color:var(--gold); }
+
+  /* ---------- Card picker modal ---------- */
+  .modal-backdrop{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.6);
+    z-index:100;
+    align-items:center; justify-content:center;
+    padding:16px;
+  }
+  .modal-backdrop.active{ display:flex; }
+  .modal-box{
+    background:var(--felt-dark);
+    border:1px solid rgba(201,162,75,0.4);
+    border-radius:10px;
+    padding:20px;
+    max-width:340px;
+    width:100%;
+  }
+  .modal-box h3{
+    margin:0 0 14px;
+    color:var(--gold);
+    font-size:1rem;
+    font-weight:700;
+  }
+  .modal-box label{
+    display:block; font-size:0.78rem; color:var(--ink-dim); margin:10px 0 4px;
+  }
+  .modal-actions{ display:flex; gap:8px; margin-top:16px; }
+  .modal-actions button{
+    flex:1; padding:11px; border-radius:6px; font-family:inherit; font-size:0.88rem; cursor:pointer; border:none;
+  }
+  .modal-actions .set-btn{ background:var(--gold); color:#241708; font-weight:700; }
+  .modal-actions .cancel-btn{ background:transparent; border:1px solid rgba(234,227,211,0.3); color:var(--ink); }
 
   .board-section{ margin-top:18px; }
   .board-section .caption{ font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--ink-dim); margin-bottom:6px; }
@@ -253,7 +291,7 @@
     </div>
 
     <div class="board-section">
-      <div class="caption">Board</div>
+      <div class="caption">Board <span style="text-transform:none; letter-spacing:0; opacity:0.7;">(Karten antippen zum manuellen Eintragen)</span></div>
       <div class="board-cards" id="boardCards"></div>
       <div class="street-buttons">
         <button id="btnFlop" disabled>Flop austeilen</button>
@@ -300,7 +338,23 @@
 </div>
 
 <div class="disclaimer">
-  <strong>Einordnung:</strong> Die Simulation rechnet deine Hand gegen N zufällige Gegnerhände (nicht gegen realistische Ranges). Sobald ein Board-Teil feststeht (Flop/Turn/River), wird nur noch der offene Rest zufällig ergänzt — die bereits ausgeteilten Karten bleiben fix. Die Handlungsempfehlung ist eine grobe, positionsbasierte Heuristik, kein GTO-Solver-Ergebnis und berücksichtigt weder Stack-Tiefe noch Tischdynamik. Zum Trainieren des Kartengefühls gedacht — nicht als Live-Entscheidungshilfe am Tisch (Equity-Software während des Spiels ist an so gut wie jedem Tisch ohnehin nicht erlaubt).
+  <strong>Einordnung:</strong> Die Simulation rechnet deine Hand gegen N zufällige Gegnerhände (nicht gegen realistische Ranges). Sobald ein Board-Teil feststeht (Flop/Turn/River), wird nur noch der offene Rest zufällig ergänzt — die bereits ausgeteilten Karten bleiben fix. Du kannst Karten auch direkt antippen und manuell eintragen, z. B. um ein reales Blatt vom Pokerabend nachzustellen. Die Handlungsempfehlung ist eine grobe, positionsbasierte Heuristik, kein GTO-Solver-Ergebnis und berücksichtigt weder Stack-Tiefe noch Tischdynamik. Zum Trainieren des Kartengefühls gedacht — nicht als Live-Entscheidungshilfe während einer laufenden Hand (Equity-Software am Tisch ist so gut wie überall ohnehin nicht erlaubt).
+</div>
+
+<div class="modal-backdrop" id="cardModal">
+  <div class="modal-box">
+    <h3 id="cardModalTitle">Karte wählen</h3>
+    <div id="rankFieldWrap">
+      <label for="pickRank">Rang</label>
+      <select id="pickRank"></select>
+    </div>
+    <label for="pickSuit">Farbe</label>
+    <select id="pickSuit"></select>
+    <div class="modal-actions">
+      <button class="cancel-btn" id="modalCancel">Abbrechen</button>
+      <button class="set-btn" id="modalSet">Karte setzen</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -314,7 +368,6 @@ const SUIT_COLOR = ['#1c1c1c','#b03027','#b03027','#1c1c1c'];
 const grid = document.getElementById('grid');
 let selectedHandDef = null;
 let heroCardObjs = [];
-let deck = [];
 let board = [];
 let currentStreet = 'none'; // none | preflop | flop | turn | river
 
@@ -375,6 +428,13 @@ function shuffle(arr){
     [arr[i],arr[j]]=[arr[j],arr[i]];
   }
   return arr;
+}
+function freshDeck(){
+  return shuffle(buildDeck(heroCardObjs.concat(board)));
+}
+function isCardUsed(rank, suit, exclude){
+  const all = heroCardObjs.concat(board);
+  return all.some(c => c!==exclude && c.rank===rank && c.suit===suit);
 }
 function evaluate5(cards){
   const ranks = cards.map(c=>c.rank).sort((a,b)=>b-a);
@@ -452,32 +512,134 @@ function cardHTML(card, empty){
 
 function renderHero(){
   const el = document.getElementById('heroCards');
-  el.innerHTML = heroCardObjs.map(c=>cardHTML(c,false)).join('');
+  el.innerHTML = heroCardObjs.map((c,i)=>{
+    const html = cardHTML(c,false);
+    return html.replace('class="card"', `class="card editable" data-hero-index="${i}"`);
+  }).join('');
+  el.querySelectorAll('[data-hero-index]').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      const idx = parseInt(node.dataset.heroIndex,10);
+      openCardPicker('hero', idx);
+    });
+  });
 }
 function renderBoard(){
   const el = document.getElementById('boardCards');
   let html='';
   for(let i=0;i<5;i++){
-    if(i<board.length) html+=cardHTML(board[i],false);
-    else html+=cardHTML(null,true);
+    if(i<board.length){
+      html += cardHTML(board[i],false).replace('class="card"', `class="card editable" data-board-index="${i}"`);
+    } else if(i===board.length){
+      html += `<div class="card empty editable" data-board-add="${i}"></div>`;
+    } else {
+      html += cardHTML(null,true);
+    }
   }
   el.innerHTML = html;
+  el.querySelectorAll('[data-board-index]').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      openCardPicker('board', parseInt(node.dataset.boardIndex,10));
+    });
+  });
+  el.querySelectorAll('[data-board-add]').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      openCardPicker('board', parseInt(node.dataset.boardAdd,10));
+    });
+  });
+}
+
+function streetFromBoardLength(len){
+  if(len<=0) return 'preflop';
+  if(len<=3) return 'flop';
+  if(len===4) return 'turn';
+  return 'river';
 }
 
 function updateStreetButtons(){
-  document.getElementById('btnFlop').disabled = !(currentStreet==='preflop');
-  document.getElementById('btnTurn').disabled = !(currentStreet==='flop');
-  document.getElementById('btnRiver').disabled = !(currentStreet==='turn');
-  document.getElementById('btnReset').disabled = (currentStreet==='preflop' || currentStreet==='none');
+  document.getElementById('btnFlop').disabled = board.length!==0;
+  document.getElementById('btnTurn').disabled = board.length!==3;
+  document.getElementById('btnRiver').disabled = board.length!==4;
+  document.getElementById('btnReset').disabled = board.length===0;
   ['btnFlop','btnTurn','btnRiver'].forEach(id=>document.getElementById(id).classList.remove('active'));
   const map={flop:'btnFlop',turn:'btnTurn',river:'btnRiver'};
   if(map[currentStreet]) document.getElementById(map[currentStreet]).classList.add('active');
 }
 
+// ---------- Manual card picker ----------
+const modal = document.getElementById('cardModal');
+const rankSelect = document.getElementById('pickRank');
+const suitSelect = document.getElementById('pickSuit');
+let pickerContext = null; // {mode:'hero'|'board', index}
+
+RANKS.slice().reverse().forEach(r=>{
+  const opt = document.createElement('option');
+  opt.value = RANKVAL[r];
+  opt.textContent = rankLabel(RANKVAL[r]);
+  rankSelect.appendChild(opt);
+});
+
+function populateSuitOptions(rank, excludeCard){
+  suitSelect.innerHTML='';
+  for(let s=0;s<4;s++){
+    if(isCardUsed(rank, s, excludeCard)) continue;
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = SUIT_SYM[s] + ' ' + ['Pik','Herz','Karo','Kreuz'][s];
+    suitSelect.appendChild(opt);
+  }
+}
+
+function openCardPicker(mode, index){
+  pickerContext = {mode, index};
+  const rankFieldWrap = document.getElementById('rankFieldWrap');
+  if(mode==='hero'){
+    document.getElementById('cardModalTitle').textContent = 'Farbe für deine Karte ' + (index+1) + ' wählen';
+    rankFieldWrap.style.display='none';
+    const card = heroCardObjs[index];
+    populateSuitOptions(card.rank, card);
+  } else {
+    document.getElementById('cardModalTitle').textContent = 'Boardkarte ' + (index+1) + ' eintragen';
+    rankFieldWrap.style.display='block';
+    const existing = board[index] || null;
+    rankSelect.value = existing ? existing.rank : rankSelect.options[0].value;
+    populateSuitOptions(parseInt(rankSelect.value,10), existing);
+  }
+  modal.classList.add('active');
+}
+rankSelect.addEventListener('change', ()=>{
+  if(pickerContext && pickerContext.mode==='board'){
+    const existing = board[pickerContext.index] || null;
+    populateSuitOptions(parseInt(rankSelect.value,10), existing);
+  }
+});
+document.getElementById('modalCancel').addEventListener('click', ()=>{
+  modal.classList.remove('active');
+  pickerContext = null;
+});
+document.getElementById('modalSet').addEventListener('click', ()=>{
+  if(!pickerContext) return;
+  const suit = parseInt(suitSelect.value,10);
+  if(isNaN(suit)) { modal.classList.remove('active'); return; }
+  if(pickerContext.mode==='hero'){
+    const rank = heroCardObjs[pickerContext.index].rank;
+    heroCardObjs[pickerContext.index] = {rank, suit};
+    renderHero();
+  } else {
+    const rank = parseInt(rankSelect.value,10);
+    board[pickerContext.index] = {rank, suit};
+    currentStreet = streetFromBoardLength(board.length);
+    renderBoard();
+    updateStreetButtons();
+  }
+  modal.classList.remove('active');
+  pickerContext = null;
+  runEquity();
+});
+modal.addEventListener('click', (e)=>{ if(e.target===modal){ modal.classList.remove('active'); pickerContext=null; } });
+
 function onHandSelected(){
   heroCardObjs = computeHeroCards(selectedHandDef);
   board = [];
-  deck = shuffle(buildDeck(heroCardObjs));
   currentStreet = 'preflop';
   renderHero();
   renderBoard();
@@ -550,23 +712,25 @@ function renderHandTips(){
 }
 
 document.getElementById('btnFlop').addEventListener('click', ()=>{
-  board = deck.splice(0,3);
+  const d = freshDeck();
+  board = d.slice(0,3);
   currentStreet='flop';
   renderBoard(); updateStreetButtons(); runEquity();
 });
 document.getElementById('btnTurn').addEventListener('click', ()=>{
-  board.push(deck.shift());
+  const d = freshDeck();
+  board = board.concat(d.slice(0,1));
   currentStreet='turn';
   renderBoard(); updateStreetButtons(); runEquity();
 });
 document.getElementById('btnRiver').addEventListener('click', ()=>{
-  board.push(deck.shift());
+  const d = freshDeck();
+  board = board.concat(d.slice(0,1));
   currentStreet='river';
   renderBoard(); updateStreetButtons(); runEquity();
 });
 document.getElementById('btnReset').addEventListener('click', ()=>{
   board=[];
-  deck = shuffle(buildDeck(heroCardObjs));
   currentStreet='preflop';
   renderBoard(); updateStreetButtons(); runEquity();
 });
