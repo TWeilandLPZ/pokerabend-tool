@@ -67,30 +67,7 @@
     padding-bottom:6px;
   }
 
-  /* left column: grid + hero cards side by side */
   .left-col{ display:flex; gap:18px; flex-wrap:wrap; }
-
-  #grid{
-    display:grid;
-    grid-template-columns:repeat(13,30px);
-    grid-template-rows:repeat(13,30px);
-    gap:2px;
-  }
-  .cell{
-    display:flex;align-items:center;justify-content:center;
-    font-size:0.6rem;
-    font-family: Menlo, monospace;
-    border-radius:3px;
-    cursor:pointer;
-    color:#0b2b23;
-    user-select:none;
-    transition:transform 0.08s ease;
-  }
-  .cell:hover{ transform:scale(1.12); z-index:2; }
-  .cell.pair{ background:#e0c368; }
-  .cell.suited{ background:#7fb89a; }
-  .cell.offsuit{ background:#c98f7a; }
-  .cell.selected{ outline:2px solid var(--ink); box-shadow:0 0 0 3px var(--gold); }
 
   .hero-box{
     display:flex;
@@ -155,6 +132,74 @@
   }
   .modal-actions .set-btn{ background:var(--gold); color:#241708; font-weight:700; }
   .modal-actions .cancel-btn{ background:transparent; border:1px solid rgba(234,227,211,0.3); color:var(--ink); }
+
+  .camera-btn{
+    margin-top:8px;
+    width:100%;
+    padding:10px;
+    background:transparent;
+    border:1px solid rgba(201,162,75,0.5);
+    color:var(--gold);
+    border-radius:6px;
+    font-family:inherit;
+    font-size:0.82rem;
+    cursor:pointer;
+  }
+  .camera-btn:disabled{ opacity:0.4; cursor:default; }
+  #scanCanvasWrap{ position:relative; touch-action:none; margin-top:10px; line-height:0; }
+  #scanCanvas{ display:block; max-width:100%; border-radius:4px; touch-action:none; }
+  #scanSelBox{ position:absolute; border:2px solid var(--gold); background:rgba(201,162,75,0.18); display:none; pointer-events:none; }
+  .scan-hint{ font-size:0.78rem; color:var(--ink-dim); line-height:1.5; }
+
+  /* ---------- Mode switcher ---------- */
+  .mode-switcher{ display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .mode-btn{
+    padding:10px 16px; border-radius:6px; border:1px solid rgba(201,162,75,0.4);
+    background:transparent; color:var(--ink); cursor:pointer; font-family:inherit; font-size:0.85rem;
+  }
+  .mode-btn.active{ background:var(--gold); color:#241708; font-weight:700; border-color:var(--gold); }
+  .mode-panel{ display:none; }
+  .mode-panel.active{ display:block; }
+
+  /* ---------- Bot game ---------- */
+  .bot-panel{ max-width:640px; }
+  .setup-row{ display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-top:10px; }
+  .setup-row > div{ flex:1; min-width:140px; }
+  .primary-btn{
+    padding:11px 18px; background:var(--gold); color:#241708; border:none; border-radius:6px;
+    font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer;
+  }
+  .secondary-btn{
+    padding:11px 18px; background:transparent; color:var(--ink); border:1px solid rgba(234,227,211,0.3);
+    border-radius:6px; font-family:inherit; font-size:0.9rem; cursor:pointer;
+  }
+  .player-card{
+    padding:10px 12px; border-radius:8px; background:rgba(0,0,0,0.25);
+    border:1px solid rgba(201,162,75,0.2);
+  }
+  .player-card.active-turn{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,75,0.25); }
+  .player-card.folded{ opacity:0.4; }
+  .player-card .name{ font-weight:700; }
+  .player-card .stack{ font-family:Menlo,monospace; font-size:0.8rem; color:var(--ink-dim); }
+  .card-back{
+    width:46px; height:64px; border-radius:5px; background:repeating-linear-gradient(45deg, #3a2418, #3a2418 4px, #4a2f1e 4px, #4a2f1e 8px);
+    border:1px solid rgba(201,162,75,0.4);
+  }
+  .action-bar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .action-bar button{
+    flex:1; min-width:90px; padding:12px 8px; border-radius:6px; font-family:inherit; font-size:0.85rem; cursor:pointer; border:none;
+  }
+  .action-bar button:disabled{ opacity:0.35; cursor:default; }
+  .act-fold{ background:rgba(192,80,63,0.25); color:#f0c8c0; border:1px solid rgba(192,80,63,0.5) !important; }
+  .act-check{ background:rgba(127,184,154,0.2); color:#bfe4d2; border:1px solid rgba(127,184,154,0.5) !important; }
+  .act-raise{ background:var(--gold); color:#241708; font-weight:700; }
+  .act-allin{ background:transparent; color:var(--gold); border:1px solid var(--gold) !important; }
+  .raise-row{ display:flex; gap:8px; align-items:center; margin-top:8px; }
+  .raise-row input{ flex:1; }
+  .game-log{
+    max-height:150px; overflow-y:auto; font-size:0.78rem; color:var(--ink-dim);
+    background:rgba(0,0,0,0.2); border-radius:6px; padding:10px; margin-top:14px; line-height:1.7;
+  }
 
   .board-section{ margin-top:18px; }
   .board-section .caption{ font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--ink-dim); margin-bottom:6px; }
@@ -246,11 +291,6 @@
     .layout{ gap:16px; }
     .panel{ padding:14px; width:100%; }
     .left-col{ justify-content:center; }
-    #grid{
-      grid-template-columns:repeat(13,21px);
-      grid-template-rows:repeat(13,21px);
-    }
-    .cell{ font-size:0.48rem; }
     .hero-box{ min-width:90px; }
     .card{ width:38px; height:52px; }
     .card .rank{ font-size:0.85rem; }
@@ -261,11 +301,6 @@
     #results{ min-width:0; width:100%; }
   }
   @media (max-width: 360px){
-    #grid{
-      grid-template-columns:repeat(13,17px);
-      grid-template-rows:repeat(13,17px);
-    }
-    .cell{ font-size:0.4rem; }
   }
 </style>
 </head>
@@ -275,14 +310,20 @@
 <div class="credit">by Tobi</div>
 <div class="sub">Wähle eine Starthand, teile Flop / Turn / River aus und sieh live, wie sich deine Gewinnwahrscheinlichkeit über die Straßen entwickelt — per Monte-Carlo-Simulation mit vollständigem 7-Karten-Hand-Evaluator.</div>
 
+<div class="mode-switcher">
+  <button class="mode-btn active" id="modeLiveBtn">🧮 Live-Equity-Modus</button>
+  <button class="mode-btn" id="modeBotsBtn">🤖 Gegen Bots spielen (Demo)</button>
+</div>
+
+<div class="mode-panel active" id="panelLive">
+
 <div class="layout">
 
   <div class="panel">
-    <div class="eyebrow">Starthand wählen</div>
+    <div class="eyebrow">Handkarten wählen</div>
     <div class="left-col">
-      <div id="grid"></div>
       <div class="hero-box">
-        <div class="caption">Deine Hand</div>
+        <div class="caption">Deine Hand <span style="text-transform:none; letter-spacing:0; opacity:0.7;">(antippen zur Auswahl)</span></div>
         <div class="hero-cards" id="heroCards">
           <div class="card empty"></div>
           <div class="card empty"></div>
@@ -299,6 +340,7 @@
         <button id="btnRiver" disabled>River austeilen</button>
         <button id="btnReset" class="reset" disabled>Board zurücksetzen</button>
       </div>
+      <button id="btnScan" class="camera-btn">📷 Boardkarte per Kamera scannen</button>
     </div>
 
     <div class="controls">
@@ -341,6 +383,53 @@
   <strong>Einordnung:</strong> Die Simulation rechnet deine Hand gegen N zufällige Gegnerhände (nicht gegen realistische Ranges). Sobald ein Board-Teil feststeht (Flop/Turn/River), wird nur noch der offene Rest zufällig ergänzt — die bereits ausgeteilten Karten bleiben fix. Du kannst Karten auch direkt antippen und manuell eintragen, z. B. um ein reales Blatt vom Pokerabend nachzustellen. Die Handlungsempfehlung ist eine grobe, positionsbasierte Heuristik, kein GTO-Solver-Ergebnis und berücksichtigt weder Stack-Tiefe noch Tischdynamik. Zum Trainieren des Kartengefühls gedacht — nicht als Live-Entscheidungshilfe während einer laufenden Hand (Equity-Software am Tisch ist so gut wie überall ohnehin nicht erlaubt).
 </div>
 
+</div>
+
+<div class="mode-panel" id="panelBots">
+  <div class="panel bot-panel">
+    <div class="eyebrow">Gegen Bots spielen — Demo</div>
+    <p class="scan-hint">Vereinfachtes Texas Hold'em gegen einfache Bots, nur zum Ausprobieren — kein echtes Geld, keine steigenden Blind-Level, keine Sonderregel für Heads-up-Blinds. Die Bots entscheiden mit derselben Monte-Carlo-Equity-Simulation wie der Live-Modus, abgeglichen mit den Pot Odds.</p>
+
+    <div id="botSetup">
+      <div class="setup-row">
+        <div>
+          <label style="display:block; font-size:0.78rem; color:var(--ink-dim); margin-bottom:4px;">Anzahl Bots</label>
+          <select id="numBots">
+            <option value="1">1 Bot (Heads-up)</option>
+            <option value="2" selected>2 Bots</option>
+            <option value="3">3 Bots</option>
+            <option value="4">4 Bots</option>
+            <option value="5">5 Bots</option>
+          </select>
+        </div>
+        <button id="startGameBtn" class="primary-btn">Spiel starten (1.000 Chips, Blinds 10/20)</button>
+      </div>
+    </div>
+
+    <div id="botGameArea" style="display:none;">
+      <div id="botTableArea"></div>
+
+      <div class="action-bar" id="actionArea">
+        <button id="actFold" class="act-fold" disabled>Fold</button>
+        <button id="actCheckCall" class="act-check" disabled>Check</button>
+        <button id="actAllIn" class="act-allin" disabled>All-in</button>
+        <button id="actRaise" class="act-raise" disabled>Erhöhen auf</button>
+      </div>
+      <div class="raise-row">
+        <input type="number" id="raiseAmount" step="10" disabled>
+        <span style="font-size:0.78rem; color:var(--ink-dim);">Chips (Betrag, auf den erhöht wird)</span>
+      </div>
+
+      <div class="game-log" id="gameLog"></div>
+
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <button id="nextHandBtn" class="primary-btn" style="display:none; flex:1;">Nächste Hand</button>
+        <button id="restartGameBtn" class="secondary-btn" style="display:none; flex:1;">Neues Spiel starten</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="cardModal">
   <div class="modal-box">
     <h3 id="cardModalTitle">Karte wählen</h3>
@@ -357,6 +446,31 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="scanModal">
+  <div class="modal-box" style="max-width:400px;">
+    <h3>Karte per Kamera scannen</h3>
+    <div id="scanStep1">
+      <p class="scan-hint">Foto aufnehmen, dann mit dem Finger ein Rechteck um Rang und Farbe <strong>einer</strong> Karte ziehen (die kleine Ecke oben links auf der Karte funktioniert meist am besten).</p>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+      <button id="scanTakePhoto" class="camera-btn" style="border-color:var(--gold); font-weight:700;">📷 Foto aufnehmen</button>
+    </div>
+    <div id="scanStep2" style="display:none;">
+      <div id="scanCanvasWrap">
+        <canvas id="scanCanvas"></canvas>
+        <div id="scanSelBox"></div>
+      </div>
+      <p id="scanStatus" class="scan-hint"></p>
+      <div class="modal-actions">
+        <button id="scanRetake" class="cancel-btn">Neues Foto</button>
+        <button id="scanAnalyze" class="set-btn" disabled>Bereich analysieren</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="scanClose" class="cancel-btn" style="width:100%;">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const RANKS = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 const RANKVAL = {A:14,K:13,Q:12,J:11,T:10,9:9,8:8,7:7,6:6,5:5,4:4,3:3,2:2};
@@ -364,32 +478,21 @@ const RANKSTR = {11:'J',12:'Q',13:'K',14:'A'};
 const SUIT_SYM = ['\u2660','\u2665','\u2666','\u2663'];
 const SUIT_COLOR = ['#1c1c1c','#b03027','#b03027','#1c1c1c'];
 
-// ---------- Grid build ----------
-const grid = document.getElementById('grid');
 let selectedHandDef = null;
-let heroCardObjs = [];
+let heroCardObjs = [null, null];
 let board = [];
 let currentStreet = 'none'; // none | preflop | flop | turn | river
 
-for(let r=0;r<13;r++){
-  for(let c=0;c<13;c++){
-    const cell = document.createElement('div');
-    cell.className='cell';
-    let label, type, v1=RANKVAL[RANKS[r]], v2=RANKVAL[RANKS[c]];
-    if(r===c){ label=RANKS[r]+RANKS[c]; type='pair'; }
-    else if(r<c){ label=RANKS[r]+RANKS[c]+'s'; type='suited'; }
-    else { label=RANKS[c]+RANKS[r]+'o'; type='offsuit'; }
-    cell.textContent=label;
-    cell.classList.add(type);
-    cell.addEventListener('click', ()=>{
-      document.querySelectorAll('.cell.selected').forEach(e=>e.classList.remove('selected'));
-      cell.classList.add('selected');
-      const high=Math.max(v1,v2), low=Math.min(v1,v2);
-      selectedHandDef = {high, low, type, label};
-      onHandSelected();
-    });
-    grid.appendChild(cell);
-  }
+function rankChar(r){
+  if(r===10) return 'T';
+  return RANKSTR[r] || String(r);
+}
+function deriveHandDef(c1, c2){
+  const high = Math.max(c1.rank, c2.rank), low = Math.min(c1.rank, c2.rank);
+  const type = c1.rank===c2.rank ? 'pair' : (c1.suit===c2.suit ? 'suited' : 'offsuit');
+  const hi = rankChar(high), lo = rankChar(low);
+  const label = type==='pair' ? hi+hi : (type==='suited' ? hi+lo+'s' : hi+lo+'o');
+  return {high, low, type, label};
 }
 
 document.getElementById('opp').addEventListener('input', e=>{
@@ -430,10 +533,10 @@ function shuffle(arr){
   return arr;
 }
 function freshDeck(){
-  return shuffle(buildDeck(heroCardObjs.concat(board)));
+  return shuffle(buildDeck(heroCardObjs.filter(Boolean).concat(board)));
 }
 function isCardUsed(rank, suit, exclude){
-  const all = heroCardObjs.concat(board);
+  const all = heroCardObjs.filter(Boolean).concat(board);
   return all.some(c => c!==exclude && c.rank===rank && c.suit===suit);
 }
 function evaluate5(cards){
@@ -530,21 +633,6 @@ function describeHandType(score){
   else if(type===8) detail = rankLabel(score[1]) + ' hoch';
   return detail ? `${name} (${detail})` : name;
 }
-function computeHeroCards(hand){
-  // Suits are picked randomly each time — the exact suit never affects
-  // equity (the deck is symmetric), this only adds visual variety so
-  // diamonds and clubs show up too, not just spades/hearts.
-  const suits = [0,1,2,3];
-  shuffle(suits);
-  if(hand.type==='pair'){
-    return [{rank:hand.high,suit:suits[0]},{rank:hand.high,suit:suits[1]}];
-  } else if(hand.type==='suited'){
-    return [{rank:hand.high,suit:suits[0]},{rank:hand.low,suit:suits[0]}];
-  } else {
-    return [{rank:hand.high,suit:suits[0]},{rank:hand.low,suit:suits[1]}];
-  }
-}
-
 function cardHTML(card, empty){
   if(empty) return '<div class="card empty"></div>';
   const rankStr = RANKSTR[card.rank] || card.rank;
@@ -554,10 +642,16 @@ function cardHTML(card, empty){
 
 function renderHero(){
   const el = document.getElementById('heroCards');
-  el.innerHTML = heroCardObjs.map((c,i)=>{
-    const html = cardHTML(c,false);
-    return html.replace('class="card"', `class="card editable" data-hero-index="${i}"`);
-  }).join('');
+  let html='';
+  for(let i=0;i<2;i++){
+    const c = heroCardObjs[i];
+    if(c){
+      html += cardHTML(c,false).replace('class="card"', `class="card editable" data-hero-index="${i}"`);
+    } else {
+      html += `<div class="card empty editable" data-hero-index="${i}"></div>`;
+    }
+  }
+  el.innerHTML = html;
   el.querySelectorAll('[data-hero-index]').forEach(node=>{
     node.addEventListener('click', ()=>{
       const idx = parseInt(node.dataset.heroIndex,10);
@@ -633,15 +727,14 @@ function populateSuitOptions(rank, excludeCard){
 
 function openCardPicker(mode, index){
   pickerContext = {mode, index};
-  const rankFieldWrap = document.getElementById('rankFieldWrap');
+  document.getElementById('rankFieldWrap').style.display='block';
   if(mode==='hero'){
-    document.getElementById('cardModalTitle').textContent = 'Farbe für deine Karte ' + (index+1) + ' wählen';
-    rankFieldWrap.style.display='none';
-    const card = heroCardObjs[index];
-    populateSuitOptions(card.rank, card);
+    document.getElementById('cardModalTitle').textContent = 'Handkarte ' + (index+1) + ' wählen';
+    const existing = heroCardObjs[index] || null;
+    rankSelect.value = existing ? existing.rank : rankSelect.options[0].value;
+    populateSuitOptions(parseInt(rankSelect.value,10), existing);
   } else {
     document.getElementById('cardModalTitle').textContent = 'Boardkarte ' + (index+1) + ' eintragen';
-    rankFieldWrap.style.display='block';
     const existing = board[index] || null;
     rankSelect.value = existing ? existing.rank : rankSelect.options[0].value;
     populateSuitOptions(parseInt(rankSelect.value,10), existing);
@@ -649,10 +742,9 @@ function openCardPicker(mode, index){
   modal.classList.add('active');
 }
 rankSelect.addEventListener('change', ()=>{
-  if(pickerContext && pickerContext.mode==='board'){
-    const existing = board[pickerContext.index] || null;
-    populateSuitOptions(parseInt(rankSelect.value,10), existing);
-  }
+  if(!pickerContext) return;
+  const existing = pickerContext.mode==='hero' ? (heroCardObjs[pickerContext.index]||null) : (board[pickerContext.index]||null);
+  populateSuitOptions(parseInt(rankSelect.value,10), existing);
 });
 document.getElementById('modalCancel').addEventListener('click', ()=>{
   modal.classList.remove('active');
@@ -661,13 +753,28 @@ document.getElementById('modalCancel').addEventListener('click', ()=>{
 document.getElementById('modalSet').addEventListener('click', ()=>{
   if(!pickerContext) return;
   const suit = parseInt(suitSelect.value,10);
-  if(isNaN(suit)) { modal.classList.remove('active'); return; }
+  if(isNaN(suit)) { modal.classList.remove('active'); pickerContext=null; return; }
+  const rank = parseInt(rankSelect.value,10);
   if(pickerContext.mode==='hero'){
-    const rank = heroCardObjs[pickerContext.index].rank;
     heroCardObjs[pickerContext.index] = {rank, suit};
     renderHero();
+    modal.classList.remove('active');
+    pickerContext = null;
+    if(heroCardObjs[0] && heroCardObjs[1]){
+      selectedHandDef = deriveHandDef(heroCardObjs[0], heroCardObjs[1]);
+      board = [];
+      currentStreet = 'preflop';
+      renderBoard();
+      updateStreetButtons();
+      document.getElementById('calc').disabled = false;
+      renderHandTips();
+      runEquity();
+    } else {
+      document.getElementById('resultsBody').innerHTML = '<div class="placeholder">Wähle noch deine zweite Handkarte.</div>';
+      document.getElementById('handTips').innerHTML = '';
+    }
+    return;
   } else {
-    const rank = parseInt(rankSelect.value,10);
     board[pickerContext.index] = {rank, suit};
     currentStreet = streetFromBoardLength(board.length);
     renderBoard();
@@ -675,21 +782,11 @@ document.getElementById('modalSet').addEventListener('click', ()=>{
   }
   modal.classList.remove('active');
   pickerContext = null;
-  runEquity();
+  if(selectedHandDef) runEquity();
 });
 modal.addEventListener('click', (e)=>{ if(e.target===modal){ modal.classList.remove('active'); pickerContext=null; } });
 
-function onHandSelected(){
-  heroCardObjs = computeHeroCards(selectedHandDef);
-  board = [];
-  currentStreet = 'preflop';
-  renderHero();
-  renderBoard();
-  updateStreetButtons();
-  document.getElementById('calc').disabled=false;
-  renderHandTips();
-  runEquity(); // auto-run for preflop
-}
+renderHero();
 
 function rankLabel(r){
   if(r===10) return '10';
@@ -751,6 +848,226 @@ function renderHandTips(){
       ${tips.map(t=>`<p>• ${t}</p>`).join('')}
     </div>
   `;
+}
+
+// ---------- Camera scan (experimental) ----------
+// Real attempt at automatic recognition, not a mock: OCR for the rank via
+// Tesseract.js, colour analysis for red/black, and simple template matching
+// for the exact suit. Accuracy depends heavily on lighting, angle and how
+// tightly the corner is cropped — this is why every result still lands in
+// the normal card picker for a manual check before it's set.
+
+let scanState = { fullCanvas:null, displayScale:1, sel:null, ocrWorker:null };
+
+function loadTesseract(){
+  return new Promise((resolve, reject)=>{
+    if(window.Tesseract){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('Erkennungs-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)'));
+    document.head.appendChild(s);
+  });
+}
+
+document.getElementById('btnScan').addEventListener('click', ()=>{
+  resetScanUI();
+  document.getElementById('scanModal').classList.add('active');
+});
+document.getElementById('scanClose').addEventListener('click', ()=>{
+  document.getElementById('scanModal').classList.remove('active');
+});
+function resetScanUI(){
+  document.getElementById('scanStep1').style.display='block';
+  document.getElementById('scanStep2').style.display='none';
+  document.getElementById('scanStatus').textContent='';
+  document.getElementById('scanAnalyze').disabled=true;
+  document.getElementById('scanSelBox').style.display='none';
+}
+document.getElementById('scanTakePhoto').addEventListener('click', ()=>document.getElementById('cameraInput').click());
+document.getElementById('scanRetake').addEventListener('click', ()=>document.getElementById('cameraInput').click());
+
+document.getElementById('cameraInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      setupScanCanvas(img);
+      document.getElementById('scanStep1').style.display='none';
+      document.getElementById('scanStep2').style.display='block';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+function setupScanCanvas(img){
+  const full = document.createElement('canvas');
+  full.width = img.width; full.height = img.height;
+  full.getContext('2d').drawImage(img,0,0);
+  scanState.fullCanvas = full;
+
+  const displayCanvas = document.getElementById('scanCanvas');
+  const maxW = Math.min(340, window.innerWidth - 90);
+  const scale = maxW / img.width;
+  displayCanvas.width = Math.round(img.width*scale);
+  displayCanvas.height = Math.round(img.height*scale);
+  displayCanvas.getContext('2d').drawImage(img,0,0,displayCanvas.width,displayCanvas.height);
+  scanState.displayScale = scale;
+  scanState.sel = null;
+  document.getElementById('scanSelBox').style.display='none';
+  document.getElementById('scanAnalyze').disabled = true;
+  document.getElementById('scanStatus').textContent = 'Rechteck um die Rang/Farbe-Ecke einer Karte ziehen.';
+  attachSelectionHandlers(displayCanvas);
+}
+
+function attachSelectionHandlers(canvas){
+  const box = document.getElementById('scanSelBox');
+  let dragging=false, startX=0, startY=0;
+  function pointFromEvent(e){
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX-rect.left, y: e.clientY-rect.top };
+  }
+  function down(e){
+    dragging=true;
+    const p = pointFromEvent(e);
+    startX=p.x; startY=p.y;
+    box.style.left=startX+'px'; box.style.top=startY+'px'; box.style.width='0px'; box.style.height='0px';
+    box.style.display='block';
+    e.preventDefault();
+  }
+  function move(e){
+    if(!dragging) return;
+    const p = pointFromEvent(e);
+    const x = Math.min(p.x,startX), y=Math.min(p.y,startY);
+    const w = Math.abs(p.x-startX), h=Math.abs(p.y-startY);
+    box.style.left=x+'px'; box.style.top=y+'px'; box.style.width=w+'px'; box.style.height=h+'px';
+    e.preventDefault();
+  }
+  function up(){
+    if(!dragging) return;
+    dragging=false;
+    const rect = { left: parseFloat(box.style.left), top: parseFloat(box.style.top), w: parseFloat(box.style.width), h: parseFloat(box.style.height) };
+    if(rect.w<8 || rect.h<8){ box.style.display='none'; document.getElementById('scanAnalyze').disabled=true; return; }
+    scanState.sel = rect;
+    document.getElementById('scanAnalyze').disabled=false;
+  }
+  canvas.addEventListener('pointerdown', down);
+  canvas.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+}
+
+document.getElementById('scanAnalyze').addEventListener('click', analyzeSelection);
+
+async function analyzeSelection(){
+  if(!scanState.sel) return;
+  const statusEl = document.getElementById('scanStatus');
+  document.getElementById('scanAnalyze').disabled = true;
+  statusEl.textContent = 'Lade Erkennungs-Engine…';
+  try{
+    await loadTesseract();
+    if(!scanState.ocrWorker){
+      scanState.ocrWorker = await Tesseract.createWorker('eng');
+      try{ await scanState.ocrWorker.setParameters({tessedit_char_whitelist:'A23456789TJQK10'}); }catch(e){}
+    }
+    statusEl.textContent = 'Analysiere ausgewählten Bereich…';
+
+    const s = scanState.sel;
+    const scale = scanState.displayScale;
+    const sx=s.left/scale, sy=s.top/scale, sw=s.w/scale, sh=s.h/scale;
+    const crop = document.createElement('canvas');
+    crop.width = Math.max(1,Math.round(sw));
+    crop.height = Math.max(1,Math.round(sh));
+    crop.getContext('2d').drawImage(scanState.fullCanvas, sx, sy, sw, sh, 0, 0, crop.width, crop.height);
+
+    const guess = await recognizeCard(crop, scanState.ocrWorker);
+    document.getElementById('scanModal').classList.remove('active');
+    openScanResultPicker(guess);
+  } catch(err){
+    statusEl.textContent = 'Erkennung fehlgeschlagen (' + err.message + '). Bereich erneut wählen oder Karte manuell eintragen.';
+    document.getElementById('scanAnalyze').disabled=false;
+  }
+}
+
+async function recognizeCard(cropCanvas, worker){
+  // Rank via OCR — upscaled 4x, since corner rank text is tiny in most photos.
+  const upscaled = document.createElement('canvas');
+  const f=4;
+  upscaled.width = cropCanvas.width*f; upscaled.height = cropCanvas.height*f;
+  upscaled.getContext('2d').drawImage(cropCanvas,0,0,upscaled.width,upscaled.height);
+  const { data } = await worker.recognize(upscaled);
+  const rank = parseRankFromText((data.text||'').toUpperCase());
+
+  // Colour → red or black (robust, simple RGB comparison)
+  const ctx = cropCanvas.getContext('2d');
+  const imgData = ctx.getImageData(0,0,cropCanvas.width,cropCanvas.height).data;
+  let rSum=0,gSum=0,bSum=0,n=0;
+  for(let i=0;i<imgData.length;i+=4){
+    const r=imgData[i], g=imgData[i+1], b=imgData[i+2];
+    if((r+g+b)/3 < 200){ rSum+=r; gSum+=g; bSum+=b; n++; }
+  }
+  let isRed = true;
+  if(n>0){ isRed = rSum/n > (gSum/n+bSum/n)/2 + 15; }
+
+  // Exact suit within the colour group — weakest link, simple template match.
+  const suit = guessSuit(cropCanvas, isRed);
+  return { rank, suit };
+}
+
+function parseRankFromText(text){
+  if(!text) return null;
+  if(text.includes('10')) return 10;
+  const map = {A:14,K:13,Q:12,J:11,T:10};
+  for(const ch of text){ if(map[ch]) return map[ch]; if(/[2-9]/.test(ch)) return parseInt(ch,10); }
+  return null;
+}
+function toBinary(canvas, w, h){
+  const tmp=document.createElement('canvas'); tmp.width=w; tmp.height=h;
+  const tctx=tmp.getContext('2d');
+  tctx.fillStyle='#fff'; tctx.fillRect(0,0,w,h);
+  tctx.drawImage(canvas,0,0,w,h);
+  const d = tctx.getImageData(0,0,w,h).data;
+  const out = new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++){ out[i] = ((d[i*4]+d[i*4+1]+d[i*4+2])/3 < 150) ? 1 : 0; }
+  return out;
+}
+function guessSuit(cropCanvas, isRed){
+  const candidates = isRed ? [1,2] : [0,3]; // Herz/Karo bzw. Pik/Kreuz
+  const w=48,h=48;
+  const targetBin = toBinary(cropCanvas, w, h);
+  let best=candidates[0], bestScore=-1;
+  for(const sym of candidates){
+    const tpl = document.createElement('canvas');
+    tpl.width=w; tpl.height=h;
+    const tctx = tpl.getContext('2d');
+    tctx.fillStyle='#fff'; tctx.fillRect(0,0,w,h);
+    tctx.fillStyle='#000';
+    tctx.font = Math.round(h*0.85)+'px sans-serif';
+    tctx.textAlign='center'; tctx.textBaseline='middle';
+    tctx.fillText(SUIT_SYM[sym], w/2, h/2+2);
+    const tplBin = toBinary(tpl, w, h);
+    let match=0;
+    for(let i=0;i<targetBin.length;i++){ if(targetBin[i]===tplBin[i]) match++; }
+    if(match>bestScore){ bestScore=match; best=sym; }
+  }
+  return best;
+}
+
+function openScanResultPicker(guess){
+  const targetIndex = board.length<5 ? board.length : 4;
+  openCardPicker('board', targetIndex);
+  if(guess.rank){ rankSelect.value = String(guess.rank); }
+  populateSuitOptions(parseInt(rankSelect.value,10), board[targetIndex]||null);
+  if(guess.suit!==null && guess.suit!==undefined){
+    const available = [...suitSelect.options].some(o=>parseInt(o.value,10)===guess.suit);
+    if(available) suitSelect.value = String(guess.suit);
+  }
+  document.getElementById('cardModalTitle').textContent = guess.rank
+    ? `Erkannt: ${rankChar(guess.rank)}${SUIT_SYM[parseInt(suitSelect.value,10)]} — bitte prüfen (Boardkarte ${targetIndex+1})`
+    : `Rang nicht sicher erkannt — bitte prüfen (Boardkarte ${targetIndex+1})`;
 }
 
 document.getElementById('btnFlop').addEventListener('click', ()=>{
@@ -895,6 +1212,366 @@ function runEquity(){
     document.getElementById('progBar').style.width=(progress*100)+'%';
   });
 }
+// ---------- Mode switching ----------
+document.getElementById('modeLiveBtn').addEventListener('click', ()=>switchMode('live'));
+document.getElementById('modeBotsBtn').addEventListener('click', ()=>switchMode('bots'));
+function switchMode(mode){
+  document.getElementById('panelLive').classList.toggle('active', mode==='live');
+  document.getElementById('panelBots').classList.toggle('active', mode==='bots');
+  document.getElementById('modeLiveBtn').classList.toggle('active', mode==='live');
+  document.getElementById('modeBotsBtn').classList.toggle('active', mode==='bots');
+}
+
+// ---------- Bot game (simplified demo) ----------
+// Own game state, deliberately separate from the Live-mode variables above
+// (bg.community instead of the Live-mode "board", etc.) so the two modes
+// never interfere with each other.
+let bg = null;
+
+function cardsToText(cards){ return cards.map(c=>rankChar(c.rank)+SUIT_SYM[c.suit]).join(' '); }
+
+function createBotGame(numBots){
+  const players = [{ id:0, name:'Du', isHuman:true, stack:1000, hole:[], folded:false, allIn:false, out:false, betThisStreet:0, totalThisHand:0, hasActed:false }];
+  for(let i=1;i<=numBots;i++){
+    players.push({ id:i, name:'Bot '+i, isHuman:false, stack:1000, hole:[], folded:false, allIn:false, out:false, betThisStreet:0, totalThisHand:0, hasActed:false });
+  }
+  return {
+    players, dealerIndex:-1, community:[], pot:0, street:'preflop',
+    currentBetToCall:0, minRaise:20, smallBlind:10, bigBlind:20,
+    toActIndex:-1, handActive:false, deck:[], log:[]
+  };
+}
+
+function logMsg(msg){ bg.log.push(msg); renderLog(); }
+
+function findNextActive(fromIdx){
+  let i=fromIdx;
+  for(let step=0; step<bg.players.length; step++){ i=(i+1)%bg.players.length; if(!bg.players[i].out) return i; }
+  return fromIdx;
+}
+function nextActor(fromIdx){
+  let i=fromIdx;
+  for(let step=0; step<bg.players.length; step++){
+    i=(i+1)%bg.players.length;
+    const p=bg.players[i];
+    if(!p.folded && !p.out && !p.allIn) return i;
+  }
+  return fromIdx;
+}
+function isRoundComplete(){
+  const contesting = bg.players.filter(p=>!p.folded && !p.out && !p.allIn);
+  if(contesting.length===0) return true;
+  return contesting.every(p=> p.hasActed && p.betThisStreet===bg.currentBetToCall);
+}
+
+function postBet(idx, amount){
+  const p = bg.players[idx];
+  const actual = Math.min(amount, p.stack);
+  p.stack -= actual; p.betThisStreet += actual; p.totalThisHand += actual; bg.pot += actual;
+  if(p.stack===0) p.allIn = true;
+}
+
+function startHand(){
+  bg.deck = shuffle(buildDeck([]));
+  bg.community = []; bg.pot = 0; bg.street = 'preflop';
+  bg.players.forEach(p=>{
+    if(p.stack<=0) p.out = true;
+    p.folded=false; p.allIn=false; p.betThisStreet=0; p.totalThisHand=0; p.hasActed=false; p.hole=[];
+  });
+  const activeCount = bg.players.filter(p=>!p.out).length;
+  document.getElementById('nextHandBtn').style.display='none';
+  if(activeCount<2){
+    logMsg('Spiel beendet — nur noch ein Spieler hat Chips.');
+    document.getElementById('restartGameBtn').style.display='block';
+    return;
+  }
+  do{ bg.dealerIndex = (bg.dealerIndex+1)%bg.players.length; } while(bg.players[bg.dealerIndex].out);
+
+  bg.players.forEach(p=>{ if(!p.out) p.hole=[bg.deck.shift(), bg.deck.shift()]; });
+
+  const sbIdx = findNextActive(bg.dealerIndex);
+  const bbIdx = findNextActive(sbIdx);
+  postBet(sbIdx, bg.smallBlind);
+  postBet(bbIdx, bg.bigBlind);
+  bg.currentBetToCall = bg.bigBlind;
+  bg.minRaise = bg.bigBlind;
+  logMsg(`— Neue Hand — ${bg.players[sbIdx].name} setzt SB (${bg.smallBlind}), ${bg.players[bbIdx].name} setzt BB (${bg.bigBlind}).`);
+
+  bg.toActIndex = findNextActive(bbIdx);
+  bg.handActive = true;
+  renderTable();
+  proceedTurn();
+}
+
+function moveToNextStreet(){
+  bg.players.forEach(p=>{ p.betThisStreet=0; p.hasActed=false; });
+  bg.currentBetToCall = 0;
+  bg.minRaise = bg.bigBlind;
+  if(bg.street==='preflop'){
+    bg.community = bg.deck.splice(0,3);
+    bg.street='flop';
+    logMsg('Flop: ' + cardsToText(bg.community));
+  } else if(bg.street==='flop'){
+    bg.community.push(bg.deck.shift());
+    bg.street='turn';
+    logMsg('Turn: ' + cardsToText([bg.community[3]]));
+  } else if(bg.street==='turn'){
+    bg.community.push(bg.deck.shift());
+    bg.street='river';
+    logMsg('River: ' + cardsToText([bg.community[4]]));
+  } else if(bg.street==='river'){
+    showdown();
+    return;
+  }
+  renderTable();
+  const contesting = bg.players.filter(p=>!p.folded && !p.out && !p.allIn);
+  if(contesting.length<=1){
+    setTimeout(moveToNextStreet, 700);
+    return;
+  }
+  bg.toActIndex = findNextActive(bg.dealerIndex);
+  // findNextActive only skips "out" players — make sure we land on someone who can still act
+  if(bg.players[bg.toActIndex].folded || bg.players[bg.toActIndex].allIn){
+    bg.toActIndex = nextActor(bg.toActIndex);
+  }
+  proceedTurn();
+}
+
+function proceedTurn(){
+  renderTable();
+  const p = bg.players[bg.toActIndex];
+  if(p.isHuman){ enableHumanActions(); }
+  else { disableHumanActions(); setTimeout(()=>botAct(bg.toActIndex), 700); }
+}
+
+function afterAction(){
+  renderTable();
+  const active = bg.players.filter(p=>!p.folded && !p.out);
+  if(active.length<=1){ awardUncontested(); return; }
+  if(isRoundComplete()){ setTimeout(moveToNextStreet, 500); return; }
+  bg.toActIndex = nextActor(bg.toActIndex);
+  proceedTurn();
+}
+
+function playerFold(idx){
+  bg.players[idx].folded=true; bg.players[idx].hasActed=true;
+  logMsg(`${bg.players[idx].name} foldet.`);
+  afterAction();
+}
+function playerCheck(idx){
+  bg.players[idx].hasActed=true;
+  logMsg(`${bg.players[idx].name} checkt.`);
+  afterAction();
+}
+function playerCall(idx){
+  const p = bg.players[idx];
+  const toCall = bg.currentBetToCall - p.betThisStreet;
+  const actual = Math.min(toCall, p.stack);
+  p.stack-=actual; p.betThisStreet+=actual; p.totalThisHand+=actual; bg.pot+=actual;
+  if(p.stack===0) p.allIn=true;
+  p.hasActed=true;
+  logMsg(`${p.name} callt ${actual}.`);
+  afterAction();
+}
+function playerBetRaise(idx, totalBetTo){
+  const p = bg.players[idx];
+  totalBetTo = Math.max(bg.currentBetToCall, Math.min(totalBetTo, p.betThisStreet + p.stack));
+  const addAmount = totalBetTo - p.betThisStreet;
+  p.stack -= addAmount; p.totalThisHand += addAmount; bg.pot += addAmount;
+  const isRaise = totalBetTo > bg.currentBetToCall;
+  p.betThisStreet = totalBetTo;
+  if(p.stack===0) p.allIn=true;
+  p.hasActed=true;
+  if(isRaise){
+    bg.minRaise = Math.max(bg.minRaise, totalBetTo - bg.currentBetToCall);
+    bg.currentBetToCall = totalBetTo;
+    bg.players.forEach((pl,i)=>{ if(i!==idx && !pl.folded && !pl.out && !pl.allIn) pl.hasActed=false; });
+    logMsg(`${p.name} erhöht auf ${totalBetTo}.`);
+  } else {
+    logMsg(`${p.name} geht all-in mit ${totalBetTo}.`);
+  }
+  afterAction();
+}
+
+function awardUncontested(){
+  const winner = bg.players.find(p=>!p.folded && !p.out);
+  winner.stack += bg.pot;
+  logMsg(`${winner.name} gewinnt ${bg.pot} — alle anderen haben gefoldet.`);
+  bg.pot = 0;
+  endHandUI();
+}
+
+function showdown(){
+  const contenders = bg.players.filter(p=>!p.folded && !p.out);
+  contenders.forEach(p=>{ p.score = evaluate7([...p.hole, ...bg.community]); });
+
+  const contributors = bg.players.filter(p=>p.totalThisHand>0);
+  const levels = [...new Set(contributors.map(p=>p.totalThisHand))].sort((a,b)=>a-b);
+  let prevLevel=0;
+  const payouts = {};
+  for(const level of levels){
+    const layerContributors = contributors.filter(p=>p.totalThisHand>=level).length;
+    const layerAmount = (level-prevLevel) * layerContributors;
+    const eligible = contenders.filter(p=>p.totalThisHand>=level);
+    if(eligible.length>0 && layerAmount>0){
+      let best=null, winners=[];
+      eligible.forEach(p=>{
+        if(best===null || cmpScore(p.score,best)>0){ best=p.score; winners=[p]; }
+        else if(cmpScore(p.score,best)===0){ winners.push(p); }
+      });
+      const share = Math.floor(layerAmount/winners.length);
+      const remainder = layerAmount - share*winners.length;
+      winners.forEach((w,i)=>{ payouts[w.id] = (payouts[w.id]||0) + share + (i<remainder?1:0); });
+    }
+    prevLevel = level;
+  }
+  Object.entries(payouts).forEach(([id,amount])=>{
+    const p = bg.players.find(pl=>pl.id===parseInt(id,10));
+    p.stack += amount;
+    logMsg(`${p.name} gewinnt ${amount} mit ${describeHandType(p.score)}.`);
+  });
+  bg.pot = 0;
+  bg.street = 'showdown';
+  renderTable(true);
+  endHandUI();
+}
+
+function endHandUI(){
+  bg.handActive = false;
+  disableHumanActions();
+  const human = bg.players[0];
+  if(human.stack<=0){
+    logMsg('Du hast keine Chips mehr. Spiel vorbei — starte neu, um es nochmal zu versuchen.');
+    document.getElementById('restartGameBtn').style.display='block';
+  } else {
+    document.getElementById('nextHandBtn').style.display='block';
+  }
+}
+
+function estimateEquity(cards, knownBoard, opponents, trials){
+  return new Promise(resolve=>{
+    if(opponents<=0){ resolve(1); return; }
+    runSimulation(cards, knownBoard, opponents, trials, (res)=>{
+      resolve((res.win + res.tie/2)/res.trials);
+    }, ()=>{});
+  });
+}
+async function botAct(idx){
+  const p = bg.players[idx];
+  const opponentsActive = bg.players.filter((pl,i)=>i!==idx && !pl.folded && !pl.out).length;
+  const trials = opponentsActive<=2 ? 500 : 300;
+  const equity = await estimateEquity(p.hole, bg.community, opponentsActive, trials);
+  const toCall = bg.currentBetToCall - p.betThisStreet;
+  const potOdds = toCall>0 ? toCall/(bg.pot+toCall) : 0;
+  const r = Math.random();
+
+  if(toCall<=0){
+    if(equity>0.65 && r<0.55 && p.stack>0){
+      const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, Math.round((bg.pot||bg.bigBlind)*0.66)));
+      playerBetRaise(idx, raiseTo);
+    } else {
+      playerCheck(idx);
+    }
+    return;
+  }
+  if(equity < potOdds - 0.04 && r>0.08){
+    playerFold(idx);
+  } else if(equity > potOdds + 0.22 && r<0.55 && p.stack>toCall){
+    const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, Math.round((bg.pot||bg.bigBlind)*0.75)));
+    playerBetRaise(idx, raiseTo);
+  } else {
+    playerCall(idx);
+  }
+}
+
+function enableHumanActions(){
+  const p = bg.players[bg.toActIndex];
+  const toCall = bg.currentBetToCall - p.betThisStreet;
+  document.getElementById('actCheckCall').textContent = toCall<=0 ? 'Check' : `Call (${toCall})`;
+  ['actFold','actCheckCall','actRaise','actAllIn','raiseAmount'].forEach(id=>document.getElementById(id).disabled=false);
+  const raiseInput = document.getElementById('raiseAmount');
+  raiseInput.min = bg.currentBetToCall + bg.minRaise;
+  raiseInput.max = p.betThisStreet + p.stack;
+  raiseInput.value = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + bg.minRaise);
+  if(p.stack + p.betThisStreet <= bg.currentBetToCall) document.getElementById('actRaise').disabled = true; // can't raise, only call/all-in for less
+}
+function disableHumanActions(){
+  ['actFold','actCheckCall','actRaise','actAllIn','raiseAmount'].forEach(id=>document.getElementById(id).disabled=true);
+}
+
+document.getElementById('actFold').addEventListener('click', ()=>{ if(bg && bg.handActive && bg.players[bg.toActIndex].isHuman) playerFold(bg.toActIndex); });
+document.getElementById('actCheckCall').addEventListener('click', ()=>{
+  if(!bg || !bg.handActive || !bg.players[bg.toActIndex].isHuman) return;
+  const p = bg.players[bg.toActIndex];
+  const toCall = bg.currentBetToCall - p.betThisStreet;
+  if(toCall<=0) playerCheck(bg.toActIndex); else playerCall(bg.toActIndex);
+});
+document.getElementById('actRaise').addEventListener('click', ()=>{
+  if(!bg || !bg.handActive || !bg.players[bg.toActIndex].isHuman) return;
+  const val = parseInt(document.getElementById('raiseAmount').value,10);
+  if(isNaN(val)) return;
+  playerBetRaise(bg.toActIndex, val);
+});
+document.getElementById('actAllIn').addEventListener('click', ()=>{
+  if(!bg || !bg.handActive || !bg.players[bg.toActIndex].isHuman) return;
+  const p = bg.players[bg.toActIndex];
+  playerBetRaise(bg.toActIndex, p.betThisStreet+p.stack);
+});
+
+function renderTable(revealAll){
+  const el = document.getElementById('botTableArea');
+  let html = `<div style="text-align:center; margin-bottom:10px;">
+    <div style="font-size:0.75rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:1px;">${STREET_LABEL[bg.street]||'Showdown'} · Pot: ${bg.pot}</div>
+    <div class="board-cards" style="justify-content:center; margin-top:6px;">`;
+  for(let i=0;i<5;i++){
+    html += bg.community[i] ? cardHTML(bg.community[i],false) : cardHTML(null,true);
+  }
+  html += `</div></div><div style="display:flex; flex-direction:column; gap:8px;">`;
+  bg.players.forEach((p,i)=>{
+    if(p.out) return;
+    const isTurn = i===bg.toActIndex && bg.handActive;
+    const showCards = p.isHuman || revealAll;
+    html += `<div class="player-card ${p.folded?'folded':''} ${isTurn?'active-turn':''}">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><span class="name">${p.name}${p.isHuman?' (Du)':''}</span>
+          ${p.allIn?' <span style="color:var(--red); font-size:0.72rem;">ALL-IN</span>':''}
+          ${p.folded?' <span style="font-size:0.72rem;">(gefoldet)</span>':''}
+        </div>
+        <div class="stack">Stack: ${p.stack}${p.betThisStreet>0?` · Einsatz: ${p.betThisStreet}`:''}</div>
+      </div>
+      <div style="display:flex; gap:4px; margin-top:6px;">
+        ${p.hole.length ? (showCards && !p.folded ? p.hole.map(c=>cardHTML(c,false)).join('') : (p.folded ? '' : '<div class="card-back"></div><div class="card-back"></div>')) : ''}
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+  renderLog();
+}
+function renderLog(){
+  const el = document.getElementById('gameLog');
+  el.innerHTML = bg.log.slice(-30).map(m=>`<div>${m}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+document.getElementById('startGameBtn').addEventListener('click', ()=>{
+  const numBots = parseInt(document.getElementById('numBots').value,10);
+  bg = createBotGame(numBots);
+  document.getElementById('botSetup').style.display='none';
+  document.getElementById('botGameArea').style.display='block';
+  document.getElementById('restartGameBtn').style.display='none';
+  startHand();
+});
+document.getElementById('nextHandBtn').addEventListener('click', ()=>{
+  document.getElementById('nextHandBtn').style.display='none';
+  startHand();
+});
+document.getElementById('restartGameBtn').addEventListener('click', ()=>{
+  document.getElementById('botGameArea').style.display='none';
+  document.getElementById('botSetup').style.display='block';
+  document.getElementById('restartGameBtn').style.display='none';
+  bg = null;
+});
 </script>
 </body>
 </html>
