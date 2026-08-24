@@ -168,7 +168,8 @@
   .bot-side-col{ flex:0 0 320px; max-width:320px; }
   .bot-side-col .game-log{ margin-top:18px; }
   @media (max-width:900px){
-    .bot-game-layout{ flex-direction:column; }
+    .bot-game-layout{ flex-direction:column; align-items:stretch; }
+    .bot-table-col{ width:100%; }
     .bot-side-col{ flex:1 1 auto; max-width:none; width:100%; }
   }
   .setup-row{ display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-top:10px; }
@@ -329,7 +330,7 @@
     color:var(--ink-dim);
     margin:14px 0 4px;
   }
-  select, input[type=range], input[type=number]{
+  select, input[type=range], input[type=number], input[type=text]{
     width:100%;
     background:var(--felt-dark);
     color:var(--ink);
@@ -398,7 +399,7 @@
     .card .rank{ font-size:0.85rem; }
     .card .suit{ font-size:1rem; }
     .street-buttons button{ min-width:70px; padding:10px 4px; font-size:0.72rem; }
-    select, input[type=range], input[type=number]{ font-size:1rem; padding:9px 8px; }
+    select, input[type=range], input[type=number], input[type=text]{ font-size:1rem; padding:9px 8px; }
     button#calc{ padding:14px; font-size:1rem; }
     #results{ min-width:0; width:100%; }
   }
@@ -415,6 +416,7 @@
 <div class="mode-switcher">
   <button class="mode-btn active" id="modeLiveBtn">🧮 Live-Equity-Modus</button>
   <button class="mode-btn" id="modeBotsBtn">🤖 Bot-Game</button>
+  <button class="mode-btn" id="modeOnlineBtn">🌐 Online spielen</button>
 </div>
 
 <div class="mode-panel active" id="panelLive">
@@ -537,6 +539,68 @@
           </div>
 
           <div class="game-log" id="gameLog"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mode-panel" id="panelOnline">
+  <div class="panel bot-panel">
+    <div class="eyebrow">Online spielen</div>
+    <p class="scan-hint">Echtes Mehrspieler-Texas-Hold'em über einen Server — funktioniert egal ob alle im selben Raum sitzen oder verteilt sind. Handkarten werden serverseitig ausgeteilt und bleiben wirklich privat.</p>
+
+    <div id="onlineConnectView">
+      <label for="onlineServerUrl">Server-Adresse</label>
+      <input type="text" id="onlineServerUrl" placeholder="wss://poker.deine-domain.de">
+      <label for="onlineName">Dein Name</label>
+      <input type="text" id="onlineName" placeholder="Dein Name" maxlength="20">
+
+      <div class="setup-row">
+        <button id="onlineCreateBtn" class="primary-btn">Neuen Raum erstellen</button>
+      </div>
+      <div class="setup-row">
+        <input type="text" id="onlineJoinCode" placeholder="Raum-Code" maxlength="6" style="text-transform:uppercase;">
+        <button id="onlineJoinBtn" class="secondary-btn">Raum beitreten</button>
+      </div>
+      <div id="onlineConnectStatus" class="scan-hint" style="margin-top:8px;"></div>
+    </div>
+
+    <div id="onlineWaitView" style="display:none;">
+      <p class="scan-hint">Raum-Code (an Freunde weitergeben): <strong id="onlineRoomCodeDisplay" style="font-size:1.4rem; color:var(--gold); letter-spacing:2px;"></strong></p>
+      <div id="onlinePlayerList" style="margin-top:8px; font-size:0.85rem;"></div>
+      <button id="onlineStartBtn" class="primary-btn" style="margin-top:14px; display:none;">Spiel starten</button>
+      <p id="onlineWaitHint" class="scan-hint" style="margin-top:8px;"></p>
+    </div>
+
+    <div id="onlineGameView" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span class="scan-hint">Raum: <strong style="color:var(--gold);" id="onlineRoomCodeSmall"></strong></span>
+        <button id="onlineLeaveBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">🚪 Raum verlassen</button>
+      </div>
+
+      <div class="bot-game-layout">
+        <div class="bot-table-col">
+          <div id="onlineTableArea"></div>
+          <div class="round-banner" id="onlineRoundBanner" style="display:none;"></div>
+          <div class="game-over-banner" id="onlineGameOverBanner" style="display:none;"></div>
+        </div>
+
+        <div class="bot-side-col">
+          <div class="action-bar" id="onlineActionArea">
+            <button id="onlineActFold" class="act-fold" disabled>Fold</button>
+            <button id="onlineActCheckCall" class="act-check" disabled>Check</button>
+            <button id="onlineActAllIn" class="act-allin" disabled>All-in</button>
+            <button id="onlineActRaise" class="act-raise" disabled>Raise to</button>
+          </div>
+          <div class="raise-row">
+            <input type="number" id="onlineRaiseAmount" step="10" disabled>
+            <span style="font-size:0.78rem; color:var(--ink-dim);">Chips (Betrag, auf den erhöht wird)</span>
+          </div>
+          <div id="onlineTurnTimer" class="scan-hint" style="margin-top:10px;"></div>
+          <button id="onlineNextHandBtn" class="primary-btn" style="display:none; margin-top:10px; width:100%;">Nächste Hand erzwingen</button>
+
+          <div class="game-log" id="onlineGameLog"></div>
         </div>
       </div>
     </div>
@@ -1328,11 +1392,14 @@ function runEquity(){
 // ---------- Mode switching ----------
 document.getElementById('modeLiveBtn').addEventListener('click', ()=>switchMode('live'));
 document.getElementById('modeBotsBtn').addEventListener('click', ()=>switchMode('bots'));
+document.getElementById('modeOnlineBtn').addEventListener('click', ()=>switchMode('online'));
 function switchMode(mode){
   document.getElementById('panelLive').classList.toggle('active', mode==='live');
   document.getElementById('panelBots').classList.toggle('active', mode==='bots');
+  document.getElementById('panelOnline').classList.toggle('active', mode==='online');
   document.getElementById('modeLiveBtn').classList.toggle('active', mode==='live');
   document.getElementById('modeBotsBtn').classList.toggle('active', mode==='bots');
+  document.getElementById('modeOnlineBtn').classList.toggle('active', mode==='online');
 }
 
 // ---------- Bot game (simplified demo) ----------
@@ -1889,6 +1956,253 @@ document.getElementById('leaveGameBtn').addEventListener('click', ()=>{
   document.getElementById('restartGameBtn').style.display='none';
   bg = null;
 });
+// ---------------------------------------------------------------------
+// Online-Modus — verbindet sich mit einem selbst gehosteten Server (siehe
+// DEPLOYMENT.md). Rendert dieselbe Tisch-Optik wie das Bot-Game, aber
+// gesteuert vom Server statt lokal — eigene Handkarten kommen ausschließlich
+// über eine private "your_hand"-Nachricht an, nie über den geteilten Zustand.
+// ---------------------------------------------------------------------
+let net = { ws:null, playerId:null, isHost:false, roomCode:null, state:null, myHole:null, revealed:null, timerInterval:null };
+
+function onlineSaveDefaults(){
+  try{
+    localStorage.setItem('pokerabend_server_url', document.getElementById('onlineServerUrl').value.trim());
+    localStorage.setItem('pokerabend_player_name', document.getElementById('onlineName').value.trim());
+  }catch(e){}
+}
+function onlineLoadDefaults(){
+  try{
+    const url = localStorage.getItem('pokerabend_server_url');
+    const name = localStorage.getItem('pokerabend_player_name');
+    if(url) document.getElementById('onlineServerUrl').value = url;
+    if(name) document.getElementById('onlineName').value = name;
+  }catch(e){}
+}
+onlineLoadDefaults();
+
+function onlineStatus(msg, isError){
+  const el = document.getElementById('onlineConnectStatus');
+  el.textContent = msg;
+  el.style.color = isError ? '#e08a7a' : '';
+}
+
+function onlineConnect(onOpenSend){
+  const url = document.getElementById('onlineServerUrl').value.trim();
+  if(!url){ onlineStatus('Bitte Server-Adresse eintragen.', true); return; }
+  if(!/^wss?:\/\//.test(url)){ onlineStatus('Adresse muss mit ws:// oder wss:// beginnen.', true); return; }
+  onlineSaveDefaults();
+  onlineStatus('Verbinde…');
+  try{ net.ws = new WebSocket(url); }
+  catch(e){ onlineStatus('Verbindung fehlgeschlagen: ' + e.message, true); return; }
+
+  net.ws.addEventListener('open', onOpenSend);
+  net.ws.addEventListener('message', onlineHandleMessage);
+  net.ws.addEventListener('close', ()=>{
+    const wasActive = document.getElementById('onlineGameView').style.display!=='none' || document.getElementById('onlineWaitView').style.display!=='none';
+    if(wasActive) alert('Verbindung zum Server verloren — kein automatischer Reconnect in dieser Version. Bitte neu verbinden.');
+    onlineReturnToConnect();
+  });
+  net.ws.addEventListener('error', ()=>{
+    onlineStatus('Verbindung fehlgeschlagen. Adresse und Server-Status prüfen.', true);
+  });
+}
+
+document.getElementById('onlineCreateBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('onlineName').value.trim() || 'Spieler';
+  onlineConnect(()=>{ net.ws.send(JSON.stringify({type:'create_room', name})); });
+});
+document.getElementById('onlineJoinBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('onlineName').value.trim() || 'Spieler';
+  const code = document.getElementById('onlineJoinCode').value.trim().toUpperCase();
+  if(!code){ onlineStatus('Bitte Raum-Code eingeben.', true); return; }
+  onlineConnect(()=>{ net.ws.send(JSON.stringify({type:'join_room', code, name})); });
+});
+document.getElementById('onlineLeaveBtn').addEventListener('click', ()=>{
+  if(net.ws) net.ws.close();
+  onlineReturnToConnect();
+});
+document.getElementById('onlineStartBtn').addEventListener('click', ()=>{ net.ws.send(JSON.stringify({type:'start_game'})); });
+document.getElementById('onlineNextHandBtn').addEventListener('click', ()=>{ net.ws.send(JSON.stringify({type:'next_hand'})); });
+
+document.getElementById('onlineActFold').addEventListener('click', ()=>net.ws.send(JSON.stringify({type:'action', action:'fold'})));
+document.getElementById('onlineActCheckCall').addEventListener('click', ()=>{
+  const me = onlineGetMe();
+  if(!me || !net.state) return;
+  const toCall = net.state.currentBetToCall - me.betThisStreet;
+  net.ws.send(JSON.stringify({type:'action', action: toCall<=0 ? 'check' : 'call'}));
+});
+document.getElementById('onlineActAllIn').addEventListener('click', ()=>net.ws.send(JSON.stringify({type:'action', action:'allin'})));
+document.getElementById('onlineActRaise').addEventListener('click', ()=>{
+  const val = parseInt(document.getElementById('onlineRaiseAmount').value,10);
+  if(isNaN(val)) return;
+  net.ws.send(JSON.stringify({type:'action', action:'raise', amount:val}));
+});
+document.getElementById('onlineRaiseAmount').addEventListener('input', function(){ this.dataset.userEdited='1'; });
+
+function onlineGetMe(){
+  if(!net.state) return null;
+  return net.state.players.find(p=>p.id===net.playerId) || null;
+}
+
+function onlineHandleMessage(ev){
+  let msg;
+  try{ msg = JSON.parse(ev.data); } catch(e){ return; }
+
+  if(msg.type==='joined'){
+    net.playerId = msg.playerId; net.isHost = msg.isHost; net.roomCode = msg.code;
+    document.getElementById('onlineConnectView').style.display='none';
+    document.getElementById('onlineRoomCodeDisplay').textContent = msg.code;
+    document.getElementById('onlineRoomCodeSmall').textContent = msg.code;
+    return;
+  }
+  if(msg.type==='error'){ onlineStatus(msg.message, true); return; }
+  if(msg.type==='room_state'){ net.state = msg; onlineRenderAll(); return; }
+  if(msg.type==='your_hand'){ net.myHole = msg.hole; net.revealed = null; onlineRenderAll(); return; }
+  if(msg.type==='showdown_reveal'){ net.revealed = msg.hands; onlineRenderAll(); return; }
+  if(msg.type==='hand_result'){
+    const rb = document.getElementById('onlineRoundBanner');
+    rb.textContent = msg.roundBanner; rb.style.display='block';
+    if(msg.gameOver){
+      const gb = document.getElementById('onlineGameOverBanner');
+      gb.textContent = msg.gameOver; gb.style.display='block';
+    }
+    return;
+  }
+}
+
+function onlineReturnToConnect(){
+  clearInterval(net.timerInterval);
+  net = { ws:null, playerId:null, isHost:false, roomCode:null, state:null, myHole:null, revealed:null, timerInterval:null };
+  document.getElementById('onlineConnectView').style.display='block';
+  document.getElementById('onlineWaitView').style.display='none';
+  document.getElementById('onlineGameView').style.display='none';
+  onlineStatus('');
+}
+
+function onlineRenderAll(){
+  if(!net.state) return;
+  const state = net.state;
+  const started = state.street!=='waiting';
+
+  if(!started){
+    document.getElementById('onlineWaitView').style.display='block';
+    document.getElementById('onlineGameView').style.display='none';
+    const list = document.getElementById('onlinePlayerList');
+    list.innerHTML = state.players.map(p=>`<div style="padding:3px 0;">${p.connected?'🟢':'⚪'} ${p.name}${p.id===net.playerId?' (Du)':''}${p.id===state.hostId?' — Host':''}</div>`).join('');
+    document.getElementById('onlineStartBtn').style.display = net.isHost ? 'block' : 'none';
+    document.getElementById('onlineWaitHint').textContent = net.isHost
+      ? (state.players.filter(p=>p.connected).length<2 ? 'Warte auf mindestens einen weiteren Spieler…' : 'Bereit — Spiel starten, sobald alle da sind.')
+      : 'Warte, bis der Host das Spiel startet…';
+  } else {
+    document.getElementById('onlineWaitView').style.display='none';
+    document.getElementById('onlineGameView').style.display='block';
+    onlineRenderTable();
+    onlineUpdateActionBar();
+    onlineUpdateTimer();
+  }
+
+  const log = document.getElementById('onlineGameLog');
+  log.innerHTML = (state.log||[]).map(m=>`<div>${m}</div>`).join('');
+  log.scrollTop = log.scrollHeight;
+
+  if(state.handActive){
+    document.getElementById('onlineRoundBanner').style.display='none';
+    document.getElementById('onlineGameOverBanner').style.display='none';
+  }
+  document.getElementById('onlineNextHandBtn').style.display = (net.isHost && !state.handActive && started) ? 'block' : 'none';
+}
+
+function onlinePosBadge(idx){
+  const state = net.state;
+  if(idx===state.dealerIndex) return {label:'D', cls:'D'};
+  if(idx===state.sbIndex) return {label:'SB', cls:'SB'};
+  if(idx===state.bbIndex) return {label:'BB', cls:'BB'};
+  return null;
+}
+function onlineRenderSeat(p, idx, angle, isSelf){
+  const state = net.state;
+  const rad = angle*Math.PI/180;
+  const R = 40;
+  const left = 50 + R*Math.sin(rad);
+  const top = 50 - R*Math.cos(rad);
+  const isTurn = idx===state.toActIndex && state.handActive;
+  const posBadge = onlinePosBadge(idx);
+
+  let cardsHtml = '';
+  if(p.holeCount>0 && !p.folded){
+    if(isSelf && net.myHole) cardsHtml = net.myHole.map(c=>cardHTML(c,false)).join('');
+    else if(net.revealed && net.revealed[p.id]) cardsHtml = net.revealed[p.id].map(c=>cardHTML(c,false)).join('');
+    else cardsHtml = '<div class="card-back-mini"></div><div class="card-back-mini"></div>';
+  }
+  const actionTag = p.lastAction ? `<div class="action-tag ${p.lastAction.cls}">${p.lastAction.label}</div>` : '';
+  const disconnectedTag = !p.connected ? ' <span style="font-size:0.65rem; opacity:0.7;">(offline)</span>' : '';
+
+  return `<div class="seat ${isSelf?'hero-seat':''} ${p.folded?'folded':''} ${isTurn?'active-turn':''}" style="left:${left}%; top:${top}%;">
+    ${actionTag}
+    <div class="seat-cards">${cardsHtml}</div>
+    <div class="stack-box">
+      ${posBadge?`<div class="pos-badge ${posBadge.cls}">${posBadge.label}</div>`:''}
+      <div class="stack-amount">$${p.stack}</div>
+      <div class="stack-name">${isSelf?'Du':p.name}${p.allIn?' · ALL-IN':''}${disconnectedTag}</div>
+    </div>
+  </div>`;
+}
+function onlineRenderTable(){
+  const state = net.state;
+  const el = document.getElementById('onlineTableArea');
+  const visible = state.players.filter(p=>!p.out);
+  const others = visible.filter(p=>p.id!==net.playerId);
+  const angles = seatAngles(others.length);
+
+  let communityHtml = '';
+  for(let i=0;i<5;i++){ communityHtml += state.community[i] ? cardHTML(state.community[i], false) : cardHTML(null,true); }
+
+  let seatsHtml = others.map((p,i)=> onlineRenderSeat(p, state.players.indexOf(p), angles[i], false)).join('');
+  const selfPlayer = visible.find(p=>p.id===net.playerId);
+  if(selfPlayer) seatsHtml += onlineRenderSeat(selfPlayer, state.players.indexOf(selfPlayer), 180, true);
+
+  el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table">
+    <div class="table-center">
+      <div class="pot-badge">Pot: $${state.pot}</div>
+      <div class="table-community">${communityHtml}</div>
+    </div>
+    ${seatsHtml}
+  </div></div>`;
+}
+
+function onlineUpdateActionBar(){
+  const state = net.state;
+  const me = onlineGetMe();
+  const isMyTurn = !!me && state.handActive && state.players.indexOf(me)===state.toActIndex;
+  const raiseInput = document.getElementById('onlineRaiseAmount');
+  ['onlineActFold','onlineActCheckCall','onlineActAllIn','onlineActRaise','onlineRaiseAmount'].forEach(id=>{
+    document.getElementById(id).disabled = !isMyTurn;
+  });
+  if(!isMyTurn){ raiseInput.dataset.userEdited=''; return; }
+  const toCall = state.currentBetToCall - me.betThisStreet;
+  document.getElementById('onlineActCheckCall').textContent = toCall<=0 ? 'Check' : `Call (${toCall})`;
+  raiseInput.min = state.currentBetToCall + state.minRaise;
+  raiseInput.max = me.betThisStreet + me.stack;
+  if(!raiseInput.dataset.userEdited){
+    raiseInput.value = Math.min(me.betThisStreet+me.stack, state.currentBetToCall + state.minRaise);
+  }
+  if(me.stack + me.betThisStreet <= state.currentBetToCall) document.getElementById('onlineActRaise').disabled = true;
+}
+
+function onlineUpdateTimer(){
+  clearInterval(net.timerInterval);
+  const el = document.getElementById('onlineTurnTimer');
+  if(!net.state || !net.state.handActive || !net.state.turnDeadline){ el.textContent=''; return; }
+  const tick = ()=>{
+    const remaining = Math.max(0, Math.round((net.state.turnDeadline - Date.now())/1000));
+    const actingPlayer = net.state.players[net.state.toActIndex];
+    const who = actingPlayer ? (actingPlayer.id===net.playerId ? 'Du bist' : actingPlayer.name + ' ist') : '';
+    el.textContent = who ? `${who} am Zug — noch ${remaining}s` : '';
+    if(remaining<=0) clearInterval(net.timerInterval);
+  };
+  tick();
+  net.timerInterval = setInterval(tick, 1000);
+}
 </script>
 </body>
 </html>
