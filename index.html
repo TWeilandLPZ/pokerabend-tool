@@ -228,7 +228,7 @@
     border:9px solid #3a2418;
     box-shadow:0 8px 20px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.4);
   }
-  .table-center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:80%; }
+  .table-center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:80%; z-index:6; }
   .pot-badge{
     display:inline-block; background:rgba(0,0,0,0.4); border:1px solid var(--gold); color:var(--gold);
     padding:6px 16px; border-radius:20px; font-weight:700; font-size:0.88rem; margin-bottom:8px;
@@ -244,8 +244,10 @@
   }
   .card.deal-flip{ animation:cardFlipIn 0.4s ease-out both; }
 
-  .seat{ position:absolute; transform:translate(-50%,-50%); text-align:center; width:96px; }
-  .seat.folded{ opacity:0.35; }
+  .seat{ position:absolute; transform:translate(-50%,-50%); text-align:center; width:96px; z-index:2; }
+  .seat.folded{ opacity:0.35; z-index:1; }
+  .seat.active-turn{ z-index:3; }
+  .seat.hero-seat{ z-index:4; }
   .seat .seat-cards{ display:flex; gap:2px; justify-content:center; margin-bottom:3px; min-height:44px; align-items:center; }
   .seat .seat-cards:empty{ min-height:0; margin-bottom:0; }
   .seat .seat-cards .card{ width:32px; height:44px; }
@@ -289,19 +291,35 @@
   }
 
   @media (max-width:480px){
-    .poker-table{ max-width:320px; }
-    .poker-table-wrap{ padding-top:50px; padding-bottom:82px; }
+    .poker-table{ max-width:min(94vw, 370px); aspect-ratio:1.18/1; }
+    .poker-table-wrap{ padding-top:58px; padding-bottom:104px; }
+    .table-community .card{ width:32px; height:45px; }
+    .table-community .card .rank{ font-size:0.72rem; }
+    .table-community .card .suit{ font-size:0.88rem; }
     .seat{ width:60px; }
     .seat .seat-cards{ min-height:28px; }
     .seat .seat-cards .card{ width:20px; height:28px; }
     .card-back-mini{ width:20px; height:28px; }
     .stack-box{ font-size:0.6rem; }
     .action-tag{ top:-13px; font-size:0.56rem; padding:2px 6px; }
-    .hero-seat{ width:140px; }
-    .hero-seat .seat-cards .card{ width:40px; height:56px; }
-    .hero-seat .seat-cards .card .rank{ font-size:1rem; }
-    .hero-seat .seat-cards .card .suit{ font-size:1.15rem; }
+    .hero-seat{ width:150px; }
+    .hero-seat .seat-cards .card{ width:42px; height:59px; }
+    .hero-seat .seat-cards .card .rank{ font-size:1.05rem; }
+    .hero-seat .seat-cards .card .suit{ font-size:1.2rem; }
     .hero-equity-badge{ font-size:0.72rem; padding:2px 6px; }
+
+    /* Ab 5 Spielern insgesamt (viele Sitzplätze auf wenig Platz) noch etwas
+       kompakter, damit benachbarte Sitzplätze auf dem schmalen Oval nicht
+       ineinanderlaufen. */
+    .seat.compact{ width:46px; }
+    .seat.compact .seat-cards{ min-height:20px; margin-bottom:1px; }
+    .seat.compact .seat-cards .card{ width:15px; height:20px; }
+    .seat.compact .seat-cards .card .rank{ font-size:0.4rem; }
+    .seat.compact .seat-cards .card .suit{ font-size:0.46rem; }
+    .seat.compact .card-back-mini{ width:15px; height:20px; }
+    .seat.compact .stack-box{ font-size:0.52rem; }
+    .seat.compact .pos-badge{ width:14px; height:14px; font-size:0.46rem; top:-4px; right:-4px; }
+    .seat.compact .action-tag{ top:-11px; font-size:0.5rem; padding:1px 5px; }
   }
 
   .board-section{ margin-top:18px; }
@@ -1450,7 +1468,7 @@ function getPosBadge(p){
 function seatAngles(botCount){
   if(botCount<=0) return [];
   if(botCount===1) return [0];
-  const gap = 55;
+  const gap = 75;
   const arc = 360 - gap;
   const start = 180 + gap/2;
   const step = arc/(botCount+1);
@@ -1816,9 +1834,9 @@ document.getElementById('actAllIn').addEventListener('click', ()=>{
   playerBetRaise(bg.toActIndex, p.betThisStreet+p.stack);
 });
 
-function renderSeat(p, angle, isHuman, animateHole){
+function renderSeat(p, angle, isHuman, animateHole, compact){
   const rad = angle*Math.PI/180;
-  const R = 40;
+  const R = isHuman ? 47 : 40;
   const left = 50 + R*Math.sin(rad);
   const top = 50 - R*Math.cos(rad);
   const isTurn = bg.players.indexOf(p)===bg.toActIndex && bg.handActive;
@@ -1838,7 +1856,7 @@ function renderSeat(p, angle, isHuman, animateHole){
 
   const actionTag = p.lastAction ? `<div class="action-tag ${p.lastAction.cls}">${p.lastAction.label}</div>` : '';
 
-  return `<div class="seat ${isHuman?'hero-seat':''} ${p.folded?'folded':''} ${isTurn?'active-turn':''}" style="left:${left}%; top:${top}%;">
+  return `<div class="seat ${isHuman?'hero-seat':''} ${p.folded?'folded':''} ${isTurn?'active-turn':''} ${compact&&!isHuman?'compact':''}" style="left:${left}%; top:${top}%;">
     ${actionTag}
     <div class="seat-cards">${cardsHtml}</div>
     <div class="stack-box">
@@ -1898,6 +1916,7 @@ function renderTable(opts){
   const human = visible.find(p=>p.isHuman);
   const bots = visible.filter(p=>!p.isHuman);
   const angles = seatAngles(bots.length);
+  const compact = visible.length>=5;
 
   let communityHtml = '';
   for(let i=0;i<5;i++){
@@ -1911,8 +1930,8 @@ function renderTable(opts){
     }
   }
 
-  let seatsHtml = bots.map((p,i)=>renderSeat(p, angles[i], false, opts.animateHole)).join('');
-  if(human) seatsHtml += renderSeat(human, 180, true, opts.animateHole);
+  let seatsHtml = bots.map((p,i)=>renderSeat(p, angles[i], false, opts.animateHole, compact)).join('');
+  if(human) seatsHtml += renderSeat(human, 180, true, opts.animateHole, compact);
 
   el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table">
     <div class="table-center">
@@ -2119,10 +2138,10 @@ function onlinePosBadge(idx){
   if(idx===state.bbIndex) return {label:'BB', cls:'BB'};
   return null;
 }
-function onlineRenderSeat(p, idx, angle, isSelf){
+function onlineRenderSeat(p, idx, angle, isSelf, compact){
   const state = net.state;
   const rad = angle*Math.PI/180;
-  const R = 40;
+  const R = isSelf ? 47 : 40;
   const left = 50 + R*Math.sin(rad);
   const top = 50 - R*Math.cos(rad);
   const isTurn = idx===state.toActIndex && state.handActive;
@@ -2137,7 +2156,7 @@ function onlineRenderSeat(p, idx, angle, isSelf){
   const actionTag = p.lastAction ? `<div class="action-tag ${p.lastAction.cls}">${p.lastAction.label}</div>` : '';
   const disconnectedTag = !p.connected ? ' <span style="font-size:0.65rem; opacity:0.7;">(offline)</span>' : '';
 
-  return `<div class="seat ${isSelf?'hero-seat':''} ${p.folded?'folded':''} ${isTurn?'active-turn':''}" style="left:${left}%; top:${top}%;">
+  return `<div class="seat ${isSelf?'hero-seat':''} ${p.folded?'folded':''} ${isTurn?'active-turn':''} ${compact&&!isSelf?'compact':''}" style="left:${left}%; top:${top}%;">
     ${actionTag}
     <div class="seat-cards">${cardsHtml}</div>
     <div class="stack-box">
@@ -2153,13 +2172,14 @@ function onlineRenderTable(){
   const visible = state.players.filter(p=>!p.out);
   const others = visible.filter(p=>p.id!==net.playerId);
   const angles = seatAngles(others.length);
+  const compact = visible.length>=5;
 
   let communityHtml = '';
   for(let i=0;i<5;i++){ communityHtml += state.community[i] ? cardHTML(state.community[i], false) : cardHTML(null,true); }
 
-  let seatsHtml = others.map((p,i)=> onlineRenderSeat(p, state.players.indexOf(p), angles[i], false)).join('');
+  let seatsHtml = others.map((p,i)=> onlineRenderSeat(p, state.players.indexOf(p), angles[i], false, compact)).join('');
   const selfPlayer = visible.find(p=>p.id===net.playerId);
-  if(selfPlayer) seatsHtml += onlineRenderSeat(selfPlayer, state.players.indexOf(selfPlayer), 180, true);
+  if(selfPlayer) seatsHtml += onlineRenderSeat(selfPlayer, state.players.indexOf(selfPlayer), 180, true, compact);
 
   el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table">
     <div class="table-center">
