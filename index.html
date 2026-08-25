@@ -2337,7 +2337,7 @@ function onlineRenderSeat(p, idx, angle, isSelf, compact){
     <div class="stack-box">
       ${posBadge?`<div class="pos-badge ${posBadge.cls}">${posBadge.label}</div>`:''}
       <div class="stack-amount">$${p.stack}</div>
-      <div class="stack-name">${isSelf?heroLabel():p.name}${p.allIn?' · ALL-IN':''}${disconnectedTag}</div>
+      <div class="stack-name">${isSelf?'Du':p.name}${p.allIn?' · ALL-IN':''}${disconnectedTag}</div>
     </div>
   </div>`;
 }
