@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Pokerabend Preparing Tool - by Tobi</title>
+<title>Pokerabend Gametool - by Tobi</title>
 <style>
   :root{
     --felt-dark:#0b2b23;
@@ -160,6 +160,17 @@
   .mode-btn.active{ background:var(--gold); color:#241708; font-weight:700; border-color:var(--gold); }
   .mode-panel{ display:none; }
   .mode-panel.active{ display:block; }
+
+  .mode-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-top:20px; }
+  .mode-card{
+    background:rgba(0,0,0,0.22); border:1px solid rgba(201,162,75,0.25); border-radius:10px;
+    padding:22px 16px; cursor:pointer; text-align:center;
+    transition:transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+  }
+  .mode-card:hover{ border-color:var(--gold); transform:translateY(-2px); background:rgba(0,0,0,0.32); }
+  .mode-card-icon{ font-size:2.3rem; margin-bottom:8px; }
+  .mode-card-title{ font-weight:700; color:var(--gold); margin-bottom:6px; font-size:1.05rem; }
+  .mode-card-desc{ font-size:0.8rem; color:var(--ink-dim); line-height:1.5; }
 
   /* ---------- Bot game ---------- */
   .bot-panel{ max-width:1180px; }
@@ -427,17 +438,46 @@
 </head>
 <body>
 
-<h1>Pokerabend Preparing Tool</h1>
+<h1>Pokerabend Gametool</h1>
 <div class="credit">by Tobi</div>
-<div class="sub">Wähle eine Starthand, teile Flop / Turn / River aus und sieh live, wie sich deine Gewinnwahrscheinlichkeit über die Straßen entwickelt — per Monte-Carlo-Simulation mit vollständigem 7-Karten-Hand-Evaluator.</div>
+<div class="sub">Drei Modi in einem Tool: Im <strong>Live-Equity-Modus</strong> rechnest du live mit, während am Tisch gespielt wird. Im <strong>Bot-Game</strong> spielst du eine echte Partie gegen einfache Bots zum Üben. Und <strong>Online</strong> spielst du gegen echte Freunde — im selben Raum oder verteilt.</div>
 
 <div class="mode-switcher">
-  <button class="mode-btn active" id="modeLiveBtn">🧮 Live-Equity-Modus</button>
+  <button class="mode-btn active" id="modeHomeBtn">🏠 Start</button>
+  <button class="mode-btn" id="modeLiveBtn">🧮 Live-Equity-Modus</button>
   <button class="mode-btn" id="modeBotsBtn">🤖 Bot-Game</button>
   <button class="mode-btn" id="modeOnlineBtn">🌐 Online spielen</button>
 </div>
 
-<div class="mode-panel active" id="panelLive">
+<div class="mode-panel active" id="panelHome">
+  <div class="panel" style="max-width:820px;">
+    <div class="eyebrow">Willkommen</div>
+    <p class="scan-hint">Name eintragen (wird für Bot-Game und Online-Modus verwendet), dann Modus wählen.</p>
+
+    <label for="globalUsername">Dein Name</label>
+    <input type="text" id="globalUsername" placeholder="Dein Name" maxlength="20">
+
+    <div class="mode-cards">
+      <div class="mode-card" data-mode="live">
+        <div class="mode-card-icon">🧮</div>
+        <div class="mode-card-title">Live-Equity-Modus</div>
+        <div class="mode-card-desc">Starthand wählen, Board eintragen oder scannen, Gewinnwahrscheinlichkeit live per Monte-Carlo-Simulation berechnen.</div>
+      </div>
+      <div class="mode-card" data-mode="bots">
+        <div class="mode-card-icon">🤖</div>
+        <div class="mode-card-title">Bot-Game</div>
+        <div class="mode-card-desc">Texas Hold'em gegen einfache Bots zum Ausprobieren — keine echten Mitspieler nötig.</div>
+      </div>
+      <div class="mode-card" data-mode="online">
+        <div class="mode-card-icon">🌐</div>
+        <div class="mode-card-title">Online spielen</div>
+        <div class="mode-card-desc">Echtes Mehrspieler-Poker mit Freunden — gleicher Ort oder verteilt, per Raum-Code.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mode-panel" id="panelLive">
 
 <div class="layout">
 
@@ -1408,17 +1448,43 @@ function runEquity(){
   });
 }
 // ---------- Mode switching ----------
+document.getElementById('modeHomeBtn').addEventListener('click', ()=>switchMode('home'));
 document.getElementById('modeLiveBtn').addEventListener('click', ()=>switchMode('live'));
 document.getElementById('modeBotsBtn').addEventListener('click', ()=>switchMode('bots'));
 document.getElementById('modeOnlineBtn').addEventListener('click', ()=>switchMode('online'));
 function switchMode(mode){
+  document.getElementById('panelHome').classList.toggle('active', mode==='home');
   document.getElementById('panelLive').classList.toggle('active', mode==='live');
   document.getElementById('panelBots').classList.toggle('active', mode==='bots');
   document.getElementById('panelOnline').classList.toggle('active', mode==='online');
+  document.getElementById('modeHomeBtn').classList.toggle('active', mode==='home');
   document.getElementById('modeLiveBtn').classList.toggle('active', mode==='live');
   document.getElementById('modeBotsBtn').classList.toggle('active', mode==='bots');
   document.getElementById('modeOnlineBtn').classList.toggle('active', mode==='online');
 }
+document.querySelectorAll('.mode-card').forEach(card=>{
+  card.addEventListener('click', ()=>switchMode(card.dataset.mode));
+});
+
+// ---------- Global username ----------
+// Shared across the tool: used as the display name "Du" gets replaced with
+// in Bot-Game, and pre-fills the Online-mode name field (same localStorage
+// key, so editing it in either place keeps both in sync).
+function getUsername(){
+  try{ return (localStorage.getItem('pokerabend_username')||'').trim(); } catch(e){ return ''; }
+}
+function setUsername(name){
+  try{ localStorage.setItem('pokerabend_username', (name||'').trim()); } catch(e){}
+}
+function heroLabel(){ return getUsername() || 'Du'; }
+
+const globalUsernameInput = document.getElementById('globalUsername');
+globalUsernameInput.value = getUsername();
+globalUsernameInput.addEventListener('input', ()=>{
+  setUsername(globalUsernameInput.value);
+  const onlineNameInput = document.getElementById('onlineName');
+  if(onlineNameInput) onlineNameInput.value = globalUsernameInput.value;
+});
 
 // ---------- Bot game (simplified demo) ----------
 // Own game state, deliberately separate from the Live-mode variables above
@@ -1436,7 +1502,7 @@ function cardsToText(cards){ return cards.map(c=>rankChar(c.rank)+SUIT_SYM[c.sui
 
 function createBotGame(numBots){
   const names = pickBotNames(numBots);
-  const players = [{ id:0, name:'Du', isHuman:true, stack:1000, hole:[], folded:false, allIn:false, out:false, betThisStreet:0, totalThisHand:0, hasActed:false, lastAction:null }];
+  const players = [{ id:0, name:heroLabel(), isHuman:true, stack:1000, hole:[], folded:false, allIn:false, out:false, betThisStreet:0, totalThisHand:0, hasActed:false, lastAction:null }];
   for(let i=1;i<=numBots;i++){
     players.push({ id:i, name:names[i-1], isHuman:false, stack:1000, hole:[], folded:false, allIn:false, out:false, betThisStreet:0, totalThisHand:0, hasActed:false, lastAction:null });
   }
@@ -1681,7 +1747,7 @@ function awardUncontested(){
   const winner = bg.players.find(p=>!p.folded && !p.out);
   const wonAmount = bg.pot;
   winner.stack += wonAmount;
-  const label = winner.isHuman ? 'Du' : winner.name;
+  const label = winner.name;
   logMsg(`${label} ${winVerb(winner)} ${wonAmount} — alle anderen haben gefoldet.`);
   showRoundBanner(`🏆 ${label} ${winVerb(winner)} den Pot: $${wonAmount} (alle anderen gefoldet)`);
   bg.pot = 0;
@@ -1722,7 +1788,7 @@ function showdown(){
   const multiLayer = potLayers.length > 1;
   potLayers.forEach((layer, idx)=>{
     const potLabel = multiLayer ? (idx===0 ? 'Hauptpot' : `Seitentopf ${idx}`) : 'Pot';
-    const winnerNames = layer.winners.map(w=>w.isHuman?'Du':w.name).join(' & ');
+    const winnerNames = layer.winners.map(w=>w.name).join(' & ');
     if(layer.eligibleCount===1){
       logMsg(`${potLabel} ($${layer.amount}): ${winnerNames} ${winVerb(layer.winners[0])} unangefochten — einzige berechtigte Person für diesen Anteil (höchster Einsatz).`);
     } else {
@@ -1734,7 +1800,7 @@ function showdown(){
   Object.entries(payouts).forEach(([id,amount])=>{
     const p = bg.players.find(pl=>pl.id===parseInt(id,10));
     p.stack += amount;
-    const label = p.isHuman ? 'Du' : p.name;
+    const label = p.name;
     winnerMsgs.push(`${label} ${winVerb(p)} $${amount} insgesamt`);
   });
   showRoundBanner('🏆 ' + winnerMsgs.join(' · ') + (multiLayer ? ' (Haupt- + Seitentopf — Details im Verlauf)' : ''));
@@ -1753,7 +1819,7 @@ function endHandUI(){
   if(human.out){
     const standing = bg.players.filter(p=>!p.out && !p.isHuman);
     const overallWinner = standing.length>0 ? standing.reduce((a,b)=> b.stack>a.stack ? b : a) : null;
-    logMsg('Du hast keine Chips mehr — dein Pokerabend endet hier.');
+    logMsg(`${heroLabel()} hat keine Chips mehr — der Pokerabend endet hier.`);
     if(overallWinner){
       showGameOverBanner(`🏆 Spieler ${overallWinner.name} gewinnt den Pokerabend!`);
     }
@@ -1764,7 +1830,7 @@ function endHandUI(){
   const remaining = bg.players.filter(p=>!p.out);
   if(remaining.length===1){
     const winner = remaining[0];
-    showGameOverBanner(winner.isHuman ? '🏆 Du gewinnst den Pokerabend!' : `🏆 Spieler ${winner.name} gewinnt den Pokerabend!`);
+    showGameOverBanner(winner.isHuman ? `🏆 ${heroLabel()} gewinnt den Pokerabend!` : `🏆 Spieler ${winner.name} gewinnt den Pokerabend!`);
     document.getElementById('restartGameBtn').style.display='block';
     document.getElementById('nextHandBtn').style.display='none';
     return;
@@ -1862,7 +1928,7 @@ function renderSeat(p, angle, isHuman, animateHole, compact){
     <div class="stack-box">
       ${posBadge?`<div class="pos-badge ${posBadge.cls}">${posBadge.label}</div>`:''}
       <div class="stack-amount">$${p.stack}</div>
-      <div class="stack-name">${isHuman?'Du':p.name}${p.allIn?' · ALL-IN':''}</div>
+      <div class="stack-name">${p.name}${p.allIn?' · ALL-IN':''}</div>
     </div>
   </div>`;
 }
@@ -1986,13 +2052,15 @@ let net = { ws:null, playerId:null, isHost:false, roomCode:null, state:null, myH
 function onlineSaveDefaults(){
   try{
     localStorage.setItem('pokerabend_server_url', document.getElementById('onlineServerUrl').value.trim());
-    localStorage.setItem('pokerabend_player_name', document.getElementById('onlineName').value.trim());
+    setUsername(document.getElementById('onlineName').value);
+    const homeInput = document.getElementById('globalUsername');
+    if(homeInput) homeInput.value = document.getElementById('onlineName').value;
   }catch(e){}
 }
 function onlineLoadDefaults(){
   try{
     const url = localStorage.getItem('pokerabend_server_url');
-    const name = localStorage.getItem('pokerabend_player_name');
+    const name = getUsername();
     if(url) document.getElementById('onlineServerUrl').value = url;
     if(name) document.getElementById('onlineName').value = name;
   }catch(e){}
@@ -2162,7 +2230,7 @@ function onlineRenderSeat(p, idx, angle, isSelf, compact){
     <div class="stack-box">
       ${posBadge?`<div class="pos-badge ${posBadge.cls}">${posBadge.label}</div>`:''}
       <div class="stack-amount">$${p.stack}</div>
-      <div class="stack-name">${isSelf?'Du':p.name}${p.allIn?' · ALL-IN':''}${disconnectedTag}</div>
+      <div class="stack-name">${isSelf?heroLabel():p.name}${p.allIn?' · ALL-IN':''}${disconnectedTag}</div>
     </div>
   </div>`;
 }
