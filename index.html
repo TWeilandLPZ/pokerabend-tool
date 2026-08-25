@@ -172,6 +172,15 @@
   .mode-card-title{ font-weight:700; color:var(--gold); margin-bottom:6px; font-size:1.05rem; }
   .mode-card-desc{ font-size:0.8rem; color:var(--ink-dim); line-height:1.5; }
 
+  .scoreboard-list{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  .scoreboard-row{
+    display:flex; align-items:center; gap:10px; padding:9px 12px;
+    background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(201,162,75,0.15);
+  }
+  .scoreboard-rank{ width:26px; text-align:center; font-weight:700; color:var(--gold); flex-shrink:0; }
+  .scoreboard-name{ flex:1; font-weight:600; }
+  .scoreboard-wins{ font-family:Menlo,monospace; color:var(--ink-dim); font-size:0.85rem; }
+
   /* ---------- Bot game ---------- */
   .bot-panel{ max-width:1180px; }
   .bot-game-layout{ display:flex; gap:26px; align-items:flex-start; }
@@ -359,7 +368,7 @@
     color:var(--ink-dim);
     margin:14px 0 4px;
   }
-  select, input[type=range], input[type=number], input[type=text]{
+  select, input[type=range], input[type=number], input[type=text], input[type=date]{
     width:100%;
     background:var(--felt-dark);
     color:var(--ink);
@@ -428,7 +437,7 @@
     .card .rank{ font-size:0.85rem; }
     .card .suit{ font-size:1rem; }
     .street-buttons button{ min-width:70px; padding:10px 4px; font-size:0.72rem; }
-    select, input[type=range], input[type=number], input[type=text]{ font-size:1rem; padding:9px 8px; }
+    select, input[type=range], input[type=number], input[type=text], input[type=date]{ font-size:1rem; padding:9px 8px; }
     button#calc{ padding:14px; font-size:1rem; }
     #results{ min-width:0; width:100%; }
   }
@@ -473,6 +482,29 @@
         <div class="mode-card-title">Online spielen</div>
         <div class="mode-card-desc">Echtes Mehrspieler-Poker mit Freunden — gleicher Ort oder verteilt, per Raum-Code.</div>
       </div>
+    </div>
+  </div>
+
+  <div class="panel" style="max-width:820px; margin-top:20px;">
+    <div class="eyebrow">Scoreboard — Pokerabend-Siege</div>
+    <p class="scan-hint">Zählt automatisch aus dem Online-Modus (wer den ganzen Tisch gewinnt) und alles, was du unten für den Vor-Ort-Pokerabend einträgst. Geteilt über denselben Server wie der Online-Modus.</p>
+
+    <div id="scoreboardArea"><p class="scan-hint">Lade Scoreboard…</p></div>
+
+    <div style="margin-top:18px; border-top:1px solid rgba(201,162,75,0.2); padding-top:14px;">
+      <label for="scoreboardName">Vor-Ort-Pokerabend eintragen</label>
+      <input type="text" id="scoreboardName" placeholder="Name des Gewinners / der Gewinnerin" maxlength="30">
+      <div class="setup-row">
+        <div>
+          <label for="scoreboardDate" style="display:block; font-size:0.78rem; color:var(--ink-dim); margin-bottom:4px;">Datum</label>
+          <input type="date" id="scoreboardDate">
+        </div>
+        <div style="flex:2;">
+          <label for="scoreboardNote" style="display:block; font-size:0.78rem; color:var(--ink-dim); margin-bottom:4px;">Notiz (optional)</label>
+          <input type="text" id="scoreboardNote" placeholder="z.B. Rebuy-Turnier" maxlength="100">
+        </div>
+      </div>
+      <button id="scoreboardAddBtn" class="primary-btn" style="margin-top:10px;">Sieg eintragen</button>
     </div>
   </div>
 </div>
@@ -1461,6 +1493,7 @@ function switchMode(mode){
   document.getElementById('modeLiveBtn').classList.toggle('active', mode==='live');
   document.getElementById('modeBotsBtn').classList.toggle('active', mode==='bots');
   document.getElementById('modeOnlineBtn').classList.toggle('active', mode==='online');
+  if(mode==='home') loadScoreboardUI();
 }
 document.querySelectorAll('.mode-card').forEach(card=>{
   card.addEventListener('click', ()=>switchMode(card.dataset.mode));
@@ -1484,7 +1517,81 @@ globalUsernameInput.addEventListener('input', ()=>{
   setUsername(globalUsernameInput.value);
   const onlineNameInput = document.getElementById('onlineName');
   if(onlineNameInput) onlineNameInput.value = globalUsernameInput.value;
+  const scoreNameInput = document.getElementById('scoreboardName');
+  if(scoreNameInput && !scoreNameInput.dataset.userEdited) scoreNameInput.value = globalUsernameInput.value;
 });
+
+// ---------- Scoreboard ----------
+// Nutzt denselben Server wie der Online-Modus (gleiche gespeicherte
+// wss://-Adresse, nur als https:// für normale HTTP-Requests statt WebSocket).
+function scoreboardHttpBase(){
+  let wsUrl = '';
+  try{ wsUrl = localStorage.getItem('pokerabend_server_url') || ''; } catch(e){}
+  if(!wsUrl) return null;
+  return wsUrl.replace(/^wss:\/\//,'https://').replace(/^ws:\/\//,'http://').replace(/\/+$/,'');
+}
+async function loadScoreboardUI(){
+  const container = document.getElementById('scoreboardArea');
+  const base = scoreboardHttpBase();
+  if(!base){
+    container.innerHTML = '<p class="scan-hint">Noch keine Server-Adresse eingetragen — im Online-Tab verbinden (oder einmal einen Raum erstellen), dann erscheint das Scoreboard hier.</p>';
+    return;
+  }
+  container.innerHTML = '<p class="scan-hint">Lade Scoreboard…</p>';
+  try{
+    const res = await fetch(base + '/scoreboard');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    renderScoreboardUI(data.tally || []);
+  }catch(e){
+    container.innerHTML = '<p class="scan-hint" style="color:#e08a7a;">Scoreboard konnte nicht geladen werden (' + e.message + ').</p>';
+  }
+}
+function renderScoreboardUI(tally){
+  const container = document.getElementById('scoreboardArea');
+  if(!tally.length){
+    container.innerHTML = '<p class="scan-hint">Noch keine Einträge — sei die erste Person auf dem Board.</p>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  container.innerHTML = '<div class="scoreboard-list">' + tally.map((entry,i)=>`
+    <div class="scoreboard-row">
+      <span class="scoreboard-rank">${medals[i] || (i+1)+'.'}</span>
+      <span class="scoreboard-name">${entry.name}</span>
+      <span class="scoreboard-wins">${entry.wins} ${entry.wins===1?'Sieg':'Siege'}</span>
+    </div>`).join('') + '</div>';
+}
+
+const scoreboardNameInput = document.getElementById('scoreboardName');
+scoreboardNameInput.value = getUsername();
+scoreboardNameInput.addEventListener('input', function(){ this.dataset.userEdited='1'; });
+document.getElementById('scoreboardDate').value = new Date().toISOString().slice(0,10);
+
+document.getElementById('scoreboardAddBtn').addEventListener('click', async ()=>{
+  const base = scoreboardHttpBase();
+  if(!base){ alert('Bitte zuerst im Online-Tab eine Server-Adresse eintragen (einmal verbinden reicht).'); return; }
+  const name = scoreboardNameInput.value.trim();
+  if(!name){ scoreboardNameInput.focus(); return; }
+  const date = document.getElementById('scoreboardDate').value || undefined;
+  const note = document.getElementById('scoreboardNote').value.trim() || undefined;
+  const btn = document.getElementById('scoreboardAddBtn');
+  btn.disabled = true; btn.textContent = 'Speichere…';
+  try{
+    const res = await fetch(base + '/scoreboard/manual', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, date, note})
+    });
+    if(!res.ok){ const err = await res.json().catch(()=>({})); throw new Error(err.error || ('HTTP '+res.status)); }
+    document.getElementById('scoreboardNote').value = '';
+    loadScoreboardUI();
+  }catch(e){
+    alert('Konnte nicht gespeichert werden: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sieg eintragen';
+  }
+});
+loadScoreboardUI();
 
 // ---------- Bot game (simplified demo) ----------
 // Own game state, deliberately separate from the Live-mode variables above
