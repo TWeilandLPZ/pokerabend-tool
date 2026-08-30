@@ -1,0 +1,15 @@
+{
+  "name": "Pokerabend Gametool",
+  "short_name": "Pokerabend",
+  "description": "Equity-Trainer, Bot-Game, Online-Poker und Event-Planung für den Pokerabend",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b2b23",
+  "theme_color": "#0b2b23",
+  "icons": [
+    { "src": "icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}
