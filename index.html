@@ -1923,22 +1923,58 @@ function renderRecentEntries(records){
       </div>`;
     }
     return `<div>
-      <div class="scoreboard-row" style="font-size:0.82rem; ${detailHtml?'cursor:pointer;':''}" ${detailHtml?`onclick="toggleScoreboardDetail(${idx})"`:''}>
-        <span class="scoreboard-rank" style="width:auto; font-weight:400; color:var(--ink-dim); font-family:Menlo,monospace; font-size:0.76rem;">${formatDateDE(r.date)}</span>
-        <span class="scoreboard-name" style="font-weight:600;">${r.name}${detailHtml?' <span style="opacity:0.5; font-size:0.7rem;">▾</span>':''}</span>
+      <div class="scoreboard-row" style="font-size:0.82rem;">
+        <span class="scoreboard-rank" style="width:auto; font-weight:400; color:var(--ink-dim); font-family:Menlo,monospace; font-size:0.76rem; ${detailHtml?'cursor:pointer;':''}" ${detailHtml?`onclick="toggleScoreboardDetail(${idx})"`:''}>${formatDateDE(r.date)}</span>
+        <span class="scoreboard-name" style="font-weight:600; ${detailHtml?'cursor:pointer;':''}" ${detailHtml?`onclick="toggleScoreboardDetail(${idx})"`:''}>${r.name}${detailHtml?' <span style="opacity:0.5; font-size:0.7rem;">▾</span>':''}</span>
         <span class="scoreboard-wins" style="font-family:inherit; font-size:0.78rem;">${badge}${noteStr}</span>
+        <button onclick="deleteScoreboardEntry('${encodeURIComponent(r.name)}','${r.date}','${r.source}')" title="Eintrag löschen" style="background:none; border:none; color:#e08a7a; font-size:1rem; cursor:pointer; padding:0 4px; line-height:1;">×</button>
       </div>
       ${detailHtml ? `<div id="sbDetail${idx}" style="display:none;">${detailHtml}</div>` : ''}
     </div>`;
   }).join('');
   return `<div style="margin-top:18px;">
-    <div class="eyebrow" style="font-size:0.68rem; margin-bottom:8px;">Letzte Einträge <span style="font-weight:400; text-transform:none; letter-spacing:0; opacity:0.6;">(antippen für Details)</span></div>
+    <div class="eyebrow" style="font-size:0.68rem; margin-bottom:8px;">Letzte Einträge <span style="font-weight:400; text-transform:none; letter-spacing:0; opacity:0.6;">(antippen für Details, × zum Löschen)</span></div>
     <div class="scoreboard-list">${rows}</div>
+    <button onclick="deleteAllScoreboardEntries()" class="secondary-btn" style="margin-top:10px; padding:5px 10px; font-size:0.72rem; border-color:rgba(192,80,63,0.5); color:#e08a7a;">Alle Einträge löschen</button>
   </div>`;
 }
 function toggleScoreboardDetail(idx){
   const el = document.getElementById('sbDetail'+idx);
   if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+// ---------------------------------------------------------------------
+// Scoreboard-Einträge löschen. Das Passwort liegt ausschließlich auf dem
+// Server (Umgebungsvariable POKER_ADMIN_PASSWORD) und wird hier nur
+// weitergereicht, nie gespeichert.
+// ---------------------------------------------------------------------
+async function sendScoreboardDelete(payload, confirmText){
+  const base = scoreboardHttpBase();
+  if(!base){ alert('Keine Server-Adresse hinterlegt — bitte zuerst im Online-Tab verbinden.'); return; }
+  if(!confirm(confirmText)) return;
+  const password = prompt('Passwort zum Löschen:');
+  if(password===null || password==='') return;
+  try{
+    const res = await fetch(base + '/scoreboard/delete', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(Object.assign({ password }, payload))
+    });
+    const data = await res.json();
+    if(!res.ok){ alert(data.error || 'Löschen fehlgeschlagen.'); return; }
+    renderScoreboardUI(data.tally || [], data.records || []);
+  }catch(e){
+    alert('Löschen fehlgeschlagen: ' + e.message);
+  }
+}
+function deleteScoreboardEntry(nameEnc, date, source){
+  const name = decodeURIComponent(nameEnc);
+  sendScoreboardDelete({ name, date, source },
+    `Eintrag "${name}" vom ${formatDateDE(date)} wirklich löschen?`);
+}
+function deleteAllScoreboardEntries(){
+  sendScoreboardDelete({ all:true },
+    'Wirklich ALLE Scoreboard-Einträge löschen? Das lässt sich nicht rückgängig machen.');
 }
 function renderScoreboardUI(tally, records){
   const container = document.getElementById('scoreboardArea');
