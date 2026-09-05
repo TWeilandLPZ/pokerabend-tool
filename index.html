@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Pokerabend Gametool - by Tobi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b2b23">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pokerabend">
 <style>
   :root{
     --felt-dark:#0b2b23;
@@ -14,22 +24,25 @@
     --ink-dim:#a9b8b0;
     --red:#c0503f;
     --card-bg:#f3ede0;
-    --card-shadow: 0 3px 8px rgba(0,0,0,0.45);
+    --card-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.5) inset;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     background:radial-gradient(ellipse at 50% -10%, var(--felt-light), var(--felt-dark) 70%);
     color:var(--ink);
-    font-family: 'Iowan Old Style','Georgia', serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
     padding:28px 18px 60px;
   }
   h1{
-    font-weight:700;
-    letter-spacing:0.5px;
-    font-size:1.9rem;
+    font-family:'Playfair Display', Georgia, serif;
+    font-weight:800;
+    font-style:italic;
+    letter-spacing:0.3px;
+    font-size:2.1rem;
     margin:0 0 2px;
     color:var(--gold);
+    text-shadow:0 2px 8px rgba(0,0,0,0.35);
   }
   .credit{
     font-size:0.78rem;
@@ -52,15 +65,17 @@
     align-items:flex-start;
   }
   .panel{
-    background:rgba(0,0,0,0.22);
+    background:linear-gradient(165deg, rgba(255,255,255,0.03), rgba(0,0,0,0.28));
     border:1px solid rgba(201,162,75,0.25);
-    border-radius:10px;
+    border-radius:12px;
     padding:18px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
   }
   .eyebrow{
     text-transform:uppercase;
     font-size:0.68rem;
-    letter-spacing:1.5px;
+    font-weight:700;
+    letter-spacing:2px;
     color:var(--gold);
     margin-bottom:10px;
     border-bottom:1px solid rgba(201,162,75,0.25);
@@ -153,23 +168,57 @@
 
   /* ---------- Mode switcher ---------- */
   .mode-switcher{ display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-  .mode-btn{
-    padding:10px 16px; border-radius:6px; border:1px solid rgba(201,162,75,0.4);
-    background:transparent; color:var(--ink); cursor:pointer; font-family:inherit; font-size:0.85rem;
+  .menu-trigger-wrap{ position:relative; margin-bottom:22px; max-width:340px; }
+  .menu-trigger-btn{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; padding:13px 16px; border-radius:9px; border:1px solid rgba(201,162,75,0.45);
+    background:linear-gradient(165deg, rgba(255,255,255,0.05), rgba(0,0,0,0.25));
+    color:var(--gold); font-family:inherit; font-weight:700; font-size:0.92rem;
+    cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.3);
   }
-  .mode-btn.active{ background:var(--gold); color:#241708; font-weight:700; border-color:var(--gold); }
+  .menu-chevron{ transition:transform 0.15s ease; font-size:0.8rem; }
+  .menu-trigger-btn.open .menu-chevron{ transform:rotate(180deg); }
+  .menu-dropdown{
+    display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:80;
+    background:var(--felt-dark); border:1px solid rgba(201,162,75,0.4); border-radius:10px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.55); overflow:hidden;
+  }
+  .menu-dropdown.open{ display:block; }
+  .menu-item{
+    display:block; width:100%; text-align:left; padding:13px 16px;
+    background:transparent; border:none; border-bottom:1px solid rgba(201,162,75,0.15);
+    color:var(--ink); font-family:inherit; font-size:0.9rem; cursor:pointer;
+  }
+  .menu-item:last-child{ border-bottom:none; }
+  .menu-item:active{ background:rgba(201,162,75,0.15); }
+  .menu-item.active{ background:rgba(201,162,75,0.16); color:var(--gold); font-weight:700; }
+
+  .mode-btn{
+    padding:10px 16px; border-radius:8px; border:1px solid rgba(201,162,75,0.4);
+    background:rgba(0,0,0,0.18); color:var(--ink); cursor:pointer; font-family:inherit; font-size:0.85rem;
+    font-weight:600; transition:transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+    box-shadow:0 2px 4px rgba(0,0,0,0.25);
+  }
+  .mode-btn:active{ transform:translateY(1px); }
+  .mode-btn.active{
+    background:linear-gradient(180deg, #e0c368, var(--gold) 60%, #a9843a);
+    color:#241708; font-weight:800; border-color:var(--gold);
+    box-shadow:0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
   .mode-panel{ display:none; }
   .mode-panel.active{ display:block; }
 
   .mode-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-top:20px; }
   .mode-card{
-    background:rgba(0,0,0,0.22); border:1px solid rgba(201,162,75,0.25); border-radius:10px;
+    background:linear-gradient(155deg, rgba(255,255,255,0.04), rgba(0,0,0,0.28));
+    border:1px solid rgba(201,162,75,0.25); border-radius:12px;
     padding:22px 16px; cursor:pointer; text-align:center;
-    transition:transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    box-shadow:0 4px 14px rgba(0,0,0,0.3);
+    transition:transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .mode-card:hover{ border-color:var(--gold); transform:translateY(-2px); background:rgba(0,0,0,0.32); }
-  .mode-card-icon{ font-size:2.3rem; margin-bottom:8px; }
-  .mode-card-title{ font-weight:700; color:var(--gold); margin-bottom:6px; font-size:1.05rem; }
+  .mode-card:hover{ border-color:var(--gold); transform:translateY(-3px); box-shadow:0 10px 22px rgba(0,0,0,0.4); }
+  .mode-card-icon{ font-size:2.3rem; margin-bottom:8px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+  .mode-card-title{ font-family:'Playfair Display', Georgia, serif; font-weight:700; color:var(--gold); margin-bottom:6px; font-size:1.15rem; }
   .mode-card-desc{ font-size:0.8rem; color:var(--ink-dim); line-height:1.5; }
 
   .scoreboard-list{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
@@ -181,6 +230,19 @@
   .scoreboard-name{ flex:1; font-weight:600; }
   .scoreboard-wins{ font-family:Menlo,monospace; color:var(--ink-dim); font-size:0.85rem; }
 
+  #blindBigDisplay.blind-fullscreen{
+    position:fixed; inset:0; z-index:999; border-radius:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%, var(--felt-light), var(--felt-dark) 85%);
+  }
+  #blindBigDisplay.blind-fullscreen #blindLevelLabel{ font-size:1.6rem; }
+  #blindBigDisplay.blind-fullscreen #blindBlindsDisplay{ font-size:7vw; margin:24px 0; }
+  #blindBigDisplay.blind-fullscreen #blindTimeDisplay{ font-size:14vw; }
+  #blindBigDisplay.blind-fullscreen #blindNextLabel{ font-size:1.8rem; margin-top:24px; }
+
+  .event-subpanel{ display:none; }
+  .event-subpanel.active{ display:block; }
+
   /* ---------- Bot game ---------- */
   .bot-panel{ max-width:1180px; }
   .bot-game-layout{ display:flex; gap:26px; align-items:flex-start; }
@@ -189,19 +251,26 @@
   .bot-side-col .game-log{ margin-top:18px; }
   @media (max-width:900px){
     .bot-game-layout{ flex-direction:column; align-items:stretch; }
-    .bot-table-col{ width:100%; }
+    .bot-table-col{ flex:1 1 auto; width:100%; }
     .bot-side-col{ flex:1 1 auto; max-width:none; width:100%; }
   }
   .setup-row{ display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-top:10px; }
   .setup-row > div{ flex:1; min-width:140px; }
   .primary-btn{
-    padding:11px 18px; background:var(--gold); color:#241708; border:none; border-radius:6px;
-    font-weight:700; font-family:inherit; font-size:0.9rem; cursor:pointer;
+    padding:12px 18px; background:linear-gradient(180deg, #e0c368, var(--gold) 55%, #a9843a);
+    color:#241708; border:1px solid rgba(255,255,255,0.25); border-radius:8px;
+    font-weight:800; font-family:inherit; font-size:0.9rem; cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.45);
+    transition:transform 0.08s ease, box-shadow 0.08s ease;
   }
+  .primary-btn:active{ transform:translateY(2px); box-shadow:0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
   .secondary-btn{
-    padding:11px 18px; background:transparent; color:var(--ink); border:1px solid rgba(234,227,211,0.3);
-    border-radius:6px; font-family:inherit; font-size:0.9rem; cursor:pointer;
+    padding:12px 18px; background:rgba(0,0,0,0.2); color:var(--ink); border:1px solid rgba(234,227,211,0.3);
+    border-radius:8px; font-family:inherit; font-weight:600; font-size:0.9rem; cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+    transition:transform 0.08s ease, border-color 0.12s ease;
   }
+  .secondary-btn:active{ transform:translateY(2px); }
   .player-card{
     padding:10px 12px; border-radius:8px; background:rgba(0,0,0,0.25);
     border:1px solid rgba(201,162,75,0.2);
@@ -216,13 +285,16 @@
   }
   .action-bar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
   .action-bar button{
-    flex:1; min-width:90px; padding:12px 8px; border-radius:6px; font-family:inherit; font-size:0.85rem; cursor:pointer; border:none;
+    flex:1; min-width:90px; padding:13px 8px; border-radius:8px; font-family:inherit; font-weight:700;
+    font-size:0.85rem; cursor:pointer; border:none; transition:transform 0.08s ease, filter 0.08s ease;
+    box-shadow:0 3px 8px rgba(0,0,0,0.35);
   }
-  .action-bar button:disabled{ opacity:0.35; cursor:default; }
-  .act-fold{ background:rgba(192,80,63,0.25); color:#f0c8c0; border:1px solid rgba(192,80,63,0.5) !important; }
-  .act-check{ background:rgba(127,184,154,0.2); color:#bfe4d2; border:1px solid rgba(127,184,154,0.5) !important; }
-  .act-raise{ background:var(--gold); color:#241708; font-weight:700; }
-  .act-allin{ background:transparent; color:var(--gold); border:1px solid var(--gold) !important; }
+  .action-bar button:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 3px rgba(0,0,0,0.35); }
+  .action-bar button:disabled{ opacity:0.35; cursor:default; box-shadow:none; }
+  .act-fold{ background:linear-gradient(180deg, rgba(210,100,80,0.35), rgba(150,55,40,0.35)); color:#f7d4cb; border:1px solid rgba(192,80,63,0.55) !important; }
+  .act-check{ background:linear-gradient(180deg, rgba(150,205,175,0.32), rgba(90,150,120,0.32)); color:#d5f0e2; border:1px solid rgba(127,184,154,0.55) !important; }
+  .act-raise{ background:linear-gradient(180deg, #e0c368, var(--gold) 55%, #a9843a); color:#241708; border:1px solid rgba(255,255,255,0.3); box-shadow:0 3px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4); }
+  .act-allin{ background:linear-gradient(180deg, rgba(201,162,75,0.18), rgba(201,162,75,0.05)); color:var(--gold); border:1px solid var(--gold) !important; }
   .raise-row{ display:flex; gap:8px; align-items:center; margin-top:8px; }
   .raise-row input{ flex:1; }
   .game-log{
@@ -241,12 +313,17 @@
     background:rgba(201,162,75,0.15); border:2px solid var(--gold);
     color:var(--gold); font-size:1.1rem; text-align:center; font-weight:700;
   }
-  .poker-table-wrap{ display:flex; justify-content:center; padding-top:74px; padding-bottom:112px; margin-top:6px; }
+  .poker-table-wrap{ display:flex; justify-content:center; padding-top:74px; padding-bottom:70px; margin-top:6px; }
+  .poker-table-rail{
+    position:relative; width:100%; max-width:720px; aspect-ratio:1.85/1; border-radius:50%;
+    background:linear-gradient(150deg, #9c7a45, #5a3b1e 45%, #2e1c0e 100%);
+    padding:16px;
+    box-shadow:0 12px 28px rgba(0,0,0,0.55), inset 0 2px 5px rgba(255,255,255,0.18), inset 0 -3px 8px rgba(0,0,0,0.5);
+  }
   .poker-table{
-    position:relative; width:100%; max-width:680px; aspect-ratio:1.55/1; border-radius:50%;
-    background:radial-gradient(ellipse at 50% 40%, var(--felt-light), var(--felt-dark) 75%);
-    border:9px solid #3a2418;
-    box-shadow:0 8px 20px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.4);
+    position:relative; width:100%; height:100%; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 42%, var(--felt-light), var(--felt-dark) 78%);
+    box-shadow:inset 0 0 45px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(0,0,0,0.35), inset 0 0 0 6px rgba(201,162,75,0.12);
   }
   .table-center{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:80%; z-index:6; }
   .pot-badge{
@@ -277,21 +354,30 @@
     width:32px; height:44px; border-radius:3px; border:1px solid rgba(201,162,75,0.4);
     background:repeating-linear-gradient(45deg,#3a2418,#3a2418 3px,#4a2f1e 3px,#4a2f1e 6px);
   }
-  .stack-box{ position:relative; border-radius:6px; font-size:0.76rem; border:1px solid rgba(0,0,0,0.3); }
-  .stack-amount{ background:linear-gradient(180deg,#d9b95c,#b5893a); color:#241708; font-weight:700; padding:3px 4px; border-radius:5px 5px 0 0; }
-  .stack-name{ background:rgba(20,20,20,0.75); color:var(--ink); padding:2px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-radius:0 0 5px 5px; }
-  .seat.active-turn .stack-box{ box-shadow:0 0 0 2px var(--gold); }
+  .stack-box{ position:relative; border-radius:6px; font-size:0.76rem; border:1px solid rgba(0,0,0,0.35); box-shadow:0 3px 6px rgba(0,0,0,0.4); }
+  .stack-amount{ background:linear-gradient(180deg,#e6c66e,#b5893a); color:#241708; font-weight:800; padding:3px 4px; border-radius:5px 5px 0 0; text-shadow:0 1px 0 rgba(255,255,255,0.3); }
+  .stack-name{ background:rgba(15,15,15,0.8); color:var(--ink); padding:2px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-radius:0 0 5px 5px; }
+  .seat.active-turn .stack-box{ box-shadow:0 0 0 2px var(--gold), 0 0 12px rgba(201,162,75,0.5); }
+  .avatar-badge{
+    position:absolute; top:-8px; left:-8px; width:24px; height:24px; border-radius:50%;
+    font-size:0.85rem; display:flex; align-items:center; justify-content:center;
+    border:2px solid rgba(255,255,255,0.55); z-index:3;
+    box-shadow:0 2px 5px rgba(0,0,0,0.5);
+  }
+  .seat.compact .avatar-badge{ width:19px; height:19px; font-size:0.68rem; top:-6px; left:-6px; }
   .pos-badge{
     position:absolute; top:-6px; right:-6px; width:19px; height:19px; border-radius:50%;
-    font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:700;
-    color:#fff; border:1px solid rgba(255,255,255,0.5); z-index:2;
+    font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:800;
+    color:#fff; border:1px solid rgba(255,255,255,0.6); z-index:2;
+    box-shadow:0 2px 4px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.35);
   }
-  .pos-badge.D{ background:#c9a24b; color:#241708; }
-  .pos-badge.SB{ background:#4a7fc9; }
-  .pos-badge.BB{ background:#c0503f; }
+  .pos-badge.D{ background:linear-gradient(180deg,#e6c66e,#a9843a); color:#241708; }
+  .pos-badge.SB{ background:linear-gradient(180deg,#6b96d6,#3a5a94); }
+  .pos-badge.BB{ background:linear-gradient(180deg,#d06a56,#943a2a); }
   .action-tag{
     position:absolute; top:-15px; left:50%; transform:translateX(-50%);
     padding:2px 9px; border-radius:10px; font-size:0.65rem; font-weight:700; white-space:nowrap;
+    box-shadow:0 2px 5px rgba(0,0,0,0.35);
   }
   .action-tag.fold{ background:rgba(120,120,120,0.55); color:#e8e8e8; }
   .action-tag.check, .action-tag.call{ background:rgba(127,184,154,0.85); color:#0b2b23; }
@@ -311,8 +397,8 @@
   }
 
   @media (max-width:480px){
-    .poker-table{ max-width:min(94vw, 370px); aspect-ratio:1.18/1; }
-    .poker-table-wrap{ padding-top:58px; padding-bottom:104px; }
+    .poker-table-rail{ max-width:min(94vw, 370px); aspect-ratio:1.18/1; padding:10px; }
+    .poker-table-wrap{ padding-top:58px; padding-bottom:60px; }
     .table-community .card{ width:32px; height:45px; }
     .table-community .card .rank{ font-size:0.72rem; }
     .table-community .card .suit{ font-size:0.88rem; }
@@ -362,7 +448,7 @@
   .street-buttons button:disabled{ opacity:0.35; cursor:default; }
   .street-buttons button.reset{ border-color:rgba(192,80,63,0.5); }
 
-  .controls label{
+  label{
     display:block;
     font-size:0.78rem;
     color:var(--ink-dim);
@@ -449,13 +535,20 @@
 
 <h1>Pokerabend Gametool</h1>
 <div class="credit">by Tobi</div>
-<div class="sub">Drei Modi in einem Tool: Im <strong>Live-Equity-Modus</strong> rechnest du live mit, während am Tisch gespielt wird. Im <strong>Bot-Game</strong> spielst du eine echte Partie gegen einfache Bots zum Üben. Und <strong>Online</strong> spielst du gegen echte Freunde — im selben Raum oder verteilt.</div>
+<div class="sub">Vier Modi in einem Tool: Im <strong>Live-Equity-Modus</strong> rechnest du live mit, während am Tisch gespielt wird. Im <strong>Bot-Game</strong> spielst du eine echte Partie gegen einfache Bots zum Üben. <strong>Online</strong> spielst du gegen echte Freunde — im selben Raum oder verteilt. Und in der <strong>Live Event Planung</strong> bereitest du den Vor-Ort-Pokerabend vor (Blinds, Spieler, Payout).</div>
 
-<div class="mode-switcher">
-  <button class="mode-btn active" id="modeHomeBtn">🏠 Start</button>
-  <button class="mode-btn" id="modeLiveBtn">🧮 Live-Equity-Modus</button>
-  <button class="mode-btn" id="modeBotsBtn">🤖 Bot-Game</button>
-  <button class="mode-btn" id="modeOnlineBtn">🌐 Online spielen</button>
+<div class="menu-trigger-wrap">
+  <button id="menuTriggerBtn" class="menu-trigger-btn">
+    <span id="menuTriggerLabel">🏠 Start</span>
+    <span class="menu-chevron">▾</span>
+  </button>
+  <div id="menuDropdown" class="menu-dropdown">
+    <button class="menu-item active" data-mode="home">🏠 Start</button>
+    <button class="menu-item" data-mode="live">🧮 Live-Equity-Modus</button>
+    <button class="menu-item" data-mode="bots">🤖 Bot-Game</button>
+    <button class="menu-item" data-mode="online">🌐 Online spielen</button>
+    <button class="menu-item" data-mode="blinds">📋 Live Event Planung</button>
+  </div>
 </div>
 
 <div class="mode-panel active" id="panelHome">
@@ -482,6 +575,11 @@
         <div class="mode-card-title">Online spielen</div>
         <div class="mode-card-desc">Echtes Mehrspieler-Poker mit Freunden — gleicher Ort oder verteilt, per Raum-Code.</div>
       </div>
+      <div class="mode-card" data-mode="blinds">
+        <div class="mode-card-icon">📋</div>
+        <div class="mode-card-title">Live Event Planung</div>
+        <div class="mode-card-desc">Blind-Timer, Spielerliste mit Buy-ins und Payout-Rechner für den Vor-Ort-Pokerabend — alles an einem Ort.</div>
+      </div>
     </div>
   </div>
 
@@ -492,7 +590,7 @@
     <div id="scoreboardArea"><p class="scan-hint">Lade Scoreboard…</p></div>
 
     <div style="margin-top:18px; border-top:1px solid rgba(201,162,75,0.2); padding-top:14px;">
-      <label for="scoreboardName">Vor-Ort-Pokerabend eintragen</label>
+      <label for="scoreboardName" style="display:block; font-size:0.78rem; color:var(--ink-dim); margin-bottom:4px;">Vor-Ort-Pokerabend eintragen</label>
       <input type="text" id="scoreboardName" placeholder="Name des Gewinners / der Gewinnerin" maxlength="30">
       <div class="setup-row">
         <div>
@@ -595,6 +693,15 @@
             <option value="5">5 Bots</option>
           </select>
         </div>
+        <div>
+          <label style="display:block; font-size:0.78rem; color:var(--ink-dim); margin-bottom:4px;">Schwierigkeit</label>
+          <select id="botDifficulty">
+            <option value="easy">Einfach — spielt grob nach Handstärke, viele Zufallsentscheidungen</option>
+            <option value="hard" selected>Schwer — Equity-, Positions- und Stacktiefe-bewusst</option>
+          </select>
+        </div>
+      </div>
+      <div class="setup-row">
         <button id="startGameBtn" class="primary-btn">Spiel starten (1.000 Chips, Blinds 10/20)</button>
       </div>
     </div>
@@ -646,6 +753,11 @@
       <label for="onlineName">Dein Name</label>
       <input type="text" id="onlineName" placeholder="Dein Name" maxlength="20">
 
+      <label style="margin-top:14px;">Avatar</label>
+      <div id="onlineAvatarPicker" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+      <label style="margin-top:12px;">Farbe</label>
+      <div id="onlineColorPicker" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+
       <div class="setup-row">
         <button id="onlineCreateBtn" class="primary-btn">Neuen Raum erstellen</button>
       </div>
@@ -653,20 +765,56 @@
         <input type="text" id="onlineJoinCode" placeholder="Raum-Code" maxlength="6" style="text-transform:uppercase;">
         <button id="onlineJoinBtn" class="secondary-btn">Raum beitreten</button>
       </div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.82rem; color:var(--ink-dim); cursor:pointer;">
+        <input type="checkbox" id="onlineSpectateCheck" style="width:auto; margin:0;">
+        Nur zuschauen (kein Sitzplatz, keine Aktionen)
+      </label>
       <div id="onlineConnectStatus" class="scan-hint" style="margin-top:8px;"></div>
     </div>
 
     <div id="onlineWaitView" style="display:none;">
       <p class="scan-hint">Raum-Code (an Freunde weitergeben): <strong id="onlineRoomCodeDisplay" style="font-size:1.4rem; color:var(--gold); letter-spacing:2px;"></strong></p>
       <div id="onlinePlayerList" style="margin-top:8px; font-size:0.85rem;"></div>
+
+      <div id="onlineSettingsBox" style="display:none; margin-top:14px; padding:12px; border:1px solid rgba(201,162,75,0.3); border-radius:8px; background:rgba(0,0,0,0.15);">
+        <div class="eyebrow" style="font-size:0.65rem; border:none; padding:0; margin-bottom:8px;">Einstellungen für diesen Abend</div>
+        <div class="setup-row" style="margin-top:0;">
+          <div>
+            <label>Bedenkzeit pro Zug</label>
+            <select id="onlineTurnSecondsSelect">
+              <option value="30">30 Sekunden</option>
+              <option value="60" selected>60 Sekunden</option>
+              <option value="90">90 Sekunden</option>
+              <option value="120">2 Minuten</option>
+            </select>
+          </div>
+          <div>
+            <label>Blinds verdoppeln</label>
+            <select id="onlineBlindIncreaseSelect">
+              <option value="0" selected>Nie (konstant 10/20)</option>
+              <option value="5">alle 5 Hände</option>
+              <option value="10">alle 10 Hände</option>
+              <option value="15">alle 15 Hände</option>
+              <option value="20">alle 20 Hände</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <p id="onlineSettingsSummary" class="scan-hint" style="margin-top:10px;"></p>
+
       <button id="onlineStartBtn" class="primary-btn" style="margin-top:14px; display:none;">Spiel starten</button>
       <p id="onlineWaitHint" class="scan-hint" style="margin-top:8px;"></p>
+      <button id="onlineWaitLeaveBtn" class="secondary-btn" style="margin-top:10px; padding:6px 12px; font-size:0.78rem;">🚪 Raum verlassen</button>
     </div>
 
     <div id="onlineGameView" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span class="scan-hint">Raum: <strong style="color:var(--gold);" id="onlineRoomCodeSmall"></strong></span>
-        <button id="onlineLeaveBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">🚪 Raum verlassen</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; flex-wrap:wrap;">
+        <span class="scan-hint">Raum: <strong style="color:var(--gold);" id="onlineRoomCodeSmall"></strong><span id="onlineBlindsBadge"></span><span id="onlineSpectatorCountBadge"></span></span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button id="onlineNotifyBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">🔕 Benachrichtigen, wenn ich dran bin</button>
+          <button id="onlineEndPokerabendBtn" class="secondary-btn" style="display:none; padding:6px 12px; font-size:0.78rem; border-color:rgba(201,162,75,0.5); color:var(--gold);">🏆 Pokerabend beenden</button>
+          <button id="onlineLeaveBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">🚪 Raum verlassen</button>
+        </div>
       </div>
 
       <div class="bot-game-layout">
@@ -677,6 +825,18 @@
         </div>
 
         <div class="bot-side-col">
+          <div id="onlineSpectatorNotice" style="display:none; margin-bottom:12px; padding:12px; border-radius:8px; background:rgba(0,0,0,0.2); border:1px solid rgba(201,162,75,0.25); text-align:center;">
+            <span style="font-size:1.3rem;">👀</span>
+            <p class="scan-hint" style="margin:6px 0 0;">Du schaust nur zu — keine eigenen Aktionen möglich.</p>
+          </div>
+          <div id="onlineRebuyArea" style="display:none; margin-bottom:12px;">
+            <p id="onlineRebuyText" class="scan-hint">Du hast alle Chips verloren.</p>
+            <button id="onlineRebuyBtn" class="primary-btn" style="width:100%;">Für 1.000 Chips zurückkaufen</button>
+            <label id="onlineAutoRebuyLabel" style="display:flex; align-items:center; gap:8px; margin-top:8px; font-size:0.78rem; color:var(--ink-dim); cursor:pointer;">
+              <input type="checkbox" id="onlineAutoRebuyCheck" style="width:auto; margin:0;">
+              Immer automatisch zurückkaufen
+            </label>
+          </div>
           <div class="action-bar" id="onlineActionArea">
             <button id="onlineActFold" class="act-fold" disabled>Fold</button>
             <button id="onlineActCheckCall" class="act-check" disabled>Check</button>
@@ -688,11 +848,176 @@
             <span style="font-size:0.78rem; color:var(--ink-dim);">Chips (Betrag, auf den erhöht wird)</span>
           </div>
           <div id="onlineTurnTimer" class="scan-hint" style="margin-top:10px;"></div>
-          <button id="onlineNextHandBtn" class="primary-btn" style="display:none; margin-top:10px; width:100%;">Nächste Hand erzwingen</button>
+          <button id="onlineNextHandBtn" class="primary-btn" style="display:none; margin-top:10px; width:100%;">Spiel fortsetzen</button>
+          <button id="onlineShowCardsBtn" class="secondary-btn" style="display:none; margin-top:8px; width:100%;">Karten zeigen</button>
+
+          <div id="onlineHostControls" style="display:none; margin-top:12px; padding:10px; border:1px solid rgba(192,80,63,0.3); border-radius:8px; background:rgba(0,0,0,0.15);">
+            <div class="eyebrow" style="font-size:0.65rem; border:none; padding:0; margin-bottom:6px;">Spieler verwalten (Host)</div>
+            <div id="onlineHostPlayerList" style="display:flex; flex-direction:column; gap:5px;"></div>
+          </div>
 
           <div class="game-log" id="onlineGameLog"></div>
+          <div style="display:flex; gap:6px; margin-top:8px;">
+            <input type="text" id="onlineChatInput" placeholder="Nachricht…" maxlength="200" style="flex:1;">
+            <button id="onlineChatSendBtn" class="secondary-btn" style="padding:8px 14px; white-space:nowrap;">Senden</button>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="mode-panel" id="panelBlinds">
+  <div class="panel bot-panel">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <div class="eyebrow" style="flex:1; min-width:200px;">Live Event Planung</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="eventExportBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.76rem;">📋 Als Text exportieren</button>
+        <button id="eventResetAllBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.76rem; border-color:rgba(192,80,63,0.5); color:#e08a7a;">Gesamte Planung zurücksetzen</button>
+      </div>
+    </div>
+    <p class="scan-hint">Blind-Timer, Spielerliste mit Buy-ins und Payout-Rechner für den Vor-Ort-Pokerabend — alles läuft komplett lokal in diesem Tab, kein Server nötig, bleibt auch nach einem versehentlichen Neuladen erhalten.</p>
+
+    <div id="eventExportArea" style="display:none; margin:14px 0; padding:12px; border:1px solid rgba(201,162,75,0.3); border-radius:8px; background:rgba(0,0,0,0.2);">
+      <textarea id="eventExportText" readonly style="width:100%; min-height:180px; background:rgba(0,0,0,0.3); color:var(--ink); border:1px solid rgba(201,162,75,0.25); border-radius:6px; padding:10px; font-family:Menlo,monospace; font-size:0.78rem; resize:vertical;"></textarea>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button id="eventExportCopyBtn" class="primary-btn" style="flex:1;">In Zwischenablage kopieren</button>
+        <button id="eventExportCloseBtn" class="secondary-btn">Schließen</button>
+      </div>
+    </div>
+
+    <div class="mode-switcher" style="margin-bottom:18px;">
+      <button class="mode-btn active" id="eventSubBtnBlinds">⏱️ Blinds</button>
+      <button class="mode-btn" id="eventSubBtnPlayers">👥 Spieler</button>
+      <button class="mode-btn" id="eventSubBtnPayout">💰 Payout</button>
+    </div>
+
+    <div class="event-subpanel active" id="eventSubPanelBlinds">
+    <div id="blindSetupView">
+      <div class="setup-row">
+        <div>
+          <label>Start Small Blind</label>
+          <input type="number" id="blindStartSB" value="25" min="1">
+        </div>
+        <div>
+          <label>Start Big Blind</label>
+          <input type="number" id="blindStartBB" value="50" min="1">
+        </div>
+      </div>
+      <div class="setup-row">
+        <div>
+          <label>Level-Dauer (Minuten)</label>
+          <input type="number" id="blindLevelDuration" value="20" min="1">
+        </div>
+        <div>
+          <label>Anzahl Level</label>
+          <input type="number" id="blindLevelCount" value="10" min="1" max="30">
+        </div>
+      </div>
+      <div class="setup-row">
+        <div style="flex:2;">
+          <label>Struktur</label>
+          <select id="blindStructurePreset">
+            <option value="1.5">Sanft (×1,5 alle 2 Level)</option>
+            <option value="2" selected>Standard (verdoppeln alle 2 Level)</option>
+            <option value="turbo">Turbo (verdoppeln jedes Level)</option>
+          </select>
+        </div>
+        <div>
+          <label>Startstack (Info)</label>
+          <input type="number" id="blindStartStack" value="5000" min="1">
+        </div>
+      </div>
+      <button id="blindGenerateBtn" class="primary-btn" style="margin-top:10px;">Zeitplan generieren</button>
+
+      <div id="blindScheduleEditor" style="display:none; margin-top:18px;">
+        <div class="eyebrow" style="font-size:0.7rem;">Zeitplan (bearbeitbar — Werte direkt ändern, Level/Pausen hinzufügen oder entfernen)</div>
+        <div id="blindScheduleList" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="blindAddLevelBtn" class="secondary-btn" style="flex:1;">+ Level</button>
+          <button id="blindAddBreakBtn" class="secondary-btn" style="flex:1;">+ Pause</button>
+        </div>
+        <button id="blindStartClockBtn" class="primary-btn" style="margin-top:14px; width:100%;">Timer starten</button>
+      </div>
+    </div>
+
+    <div id="blindClockView" style="display:none;">
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <button id="blindSoundBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">🔊 Ton an</button>
+        <button id="blindFullscreenBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">⛶ Vollbild</button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+        <button id="blindRestartBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">↺ Neu starten</button>
+        <button id="blindEndBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem; border-color:rgba(192,80,63,0.5); color:#e08a7a;">⏹ Beenden</button>
+        <button id="blindResetBtn" class="secondary-btn" style="padding:6px 12px; font-size:0.78rem;">🔄 Neu planen</button>
+      </div>
+
+      <div id="blindBigDisplay" style="text-align:center; background:rgba(0,0,0,0.25); border:1px solid rgba(201,162,75,0.3); border-radius:12px; padding:28px 16px;">
+        <div id="blindLevelLabel" style="font-size:0.85rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:1.5px;"></div>
+        <div id="blindBlindsDisplay" style="font-size:2.6rem; font-weight:700; color:var(--gold); margin:8px 0;"></div>
+        <div id="blindTimeDisplay" style="font-size:3.8rem; font-weight:700; font-family:Menlo,monospace; line-height:1;"></div>
+        <div id="blindNextLabel" style="font-size:0.85rem; color:var(--ink-dim); margin-top:10px;"></div>
+      </div>
+
+      <div class="action-bar" style="margin-top:16px;">
+        <button id="blindPauseBtn" class="act-check">Pause</button>
+        <button id="blindMinusBtn" class="act-allin">− 1 Min</button>
+        <button id="blindPlusBtn" class="act-allin">+ 1 Min</button>
+        <button id="blindSkipBtn" class="act-raise">Nächstes Level</button>
+      </div>
+
+      <div style="margin-top:20px;">
+        <div class="eyebrow" style="font-size:0.7rem;">Gesamter Zeitplan</div>
+        <p class="scan-hint" style="margin-top:4px;">Werte direkt antippen und ändern — bereits gelaufene Level sind gesperrt, die Dauer des aktuellen läuft über die ±1-Minute-Buttons oben.</p>
+        <div id="blindFullSchedule" style="display:flex; flex-direction:column; gap:4px; margin-top:8px; max-height:280px; overflow-y:auto;"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="blindFullAddLevelBtn" class="secondary-btn" style="flex:1;">+ Level</button>
+          <button id="blindFullAddBreakBtn" class="secondary-btn" style="flex:1;">+ Pause</button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="event-subpanel" id="eventSubPanelPlayers">
+      <p class="scan-hint">Wer spielt mit, wie viele Buy-ins/Rebuys, und wer ist schon raus. Ausscheidungs-Reihenfolge wird automatisch als Endplatzierung erfasst — für den Payout-Rechner nebenan.</p>
+      <div class="setup-row">
+        <input type="text" id="eventPlayerName" placeholder="Name" style="flex:2;">
+        <button id="eventAddPlayerBtn" class="primary-btn" style="flex:1;">+ Hinzufügen</button>
+      </div>
+      <div id="eventPlayerList" style="margin-top:16px; display:flex; flex-direction:column; gap:6px;"></div>
+      <p id="eventPlayerSummary" class="scan-hint" style="margin-top:12px;"></p>
+    </div>
+
+    <div class="event-subpanel" id="eventSubPanelPayout">
+      <p class="scan-hint">Preispool ergibt sich automatisch aus den Buy-ins der Spielerliste — bei Bedarf unten manuell überschreibbar.</p>
+      <div class="setup-row">
+        <div>
+          <label>Buy-in pro Person (€)</label>
+          <input type="number" id="payoutBuyInAmount" value="20" min="0">
+        </div>
+        <div>
+          <label>Rake / Abzug (%)</label>
+          <input type="number" id="payoutRakePercent" value="0" min="0" max="100">
+        </div>
+      </div>
+      <div class="setup-row">
+        <div>
+          <label>Preispool manuell (€, optional)</label>
+          <input type="number" id="payoutPoolOverride" placeholder="automatisch aus Buy-ins">
+        </div>
+        <div>
+          <label>Bezahlte Plätze</label>
+          <select id="payoutPaidPositions">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+      <div id="payoutSplitEditor" style="margin-top:14px;"></div>
+      <div id="payoutResult" style="margin-top:16px;"></div>
     </div>
   </div>
 </div>
@@ -1480,19 +1805,41 @@ function runEquity(){
   });
 }
 // ---------- Mode switching ----------
-document.getElementById('modeHomeBtn').addEventListener('click', ()=>switchMode('home'));
-document.getElementById('modeLiveBtn').addEventListener('click', ()=>switchMode('live'));
-document.getElementById('modeBotsBtn').addEventListener('click', ()=>switchMode('bots'));
-document.getElementById('modeOnlineBtn').addEventListener('click', ()=>switchMode('online'));
+const MENU_LABELS = {
+  home: '🏠 Start', live: '🧮 Live-Equity-Modus', bots: '🤖 Bot-Game',
+  online: '🌐 Online spielen', blinds: '📋 Live Event Planung'
+};
+const menuTriggerBtn = document.getElementById('menuTriggerBtn');
+const menuDropdown = document.getElementById('menuDropdown');
+menuTriggerBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const isOpen = menuDropdown.classList.contains('open');
+  menuDropdown.classList.toggle('open', !isOpen);
+  menuTriggerBtn.classList.toggle('open', !isOpen);
+});
+document.querySelectorAll('.menu-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    switchMode(item.dataset.mode);
+    menuDropdown.classList.remove('open');
+    menuTriggerBtn.classList.remove('open');
+  });
+});
+document.addEventListener('click', (e)=>{
+  if(!menuTriggerBtn.contains(e.target) && !menuDropdown.contains(e.target)){
+    menuDropdown.classList.remove('open');
+    menuTriggerBtn.classList.remove('open');
+  }
+});
 function switchMode(mode){
   document.getElementById('panelHome').classList.toggle('active', mode==='home');
   document.getElementById('panelLive').classList.toggle('active', mode==='live');
   document.getElementById('panelBots').classList.toggle('active', mode==='bots');
   document.getElementById('panelOnline').classList.toggle('active', mode==='online');
-  document.getElementById('modeHomeBtn').classList.toggle('active', mode==='home');
-  document.getElementById('modeLiveBtn').classList.toggle('active', mode==='live');
-  document.getElementById('modeBotsBtn').classList.toggle('active', mode==='bots');
-  document.getElementById('modeOnlineBtn').classList.toggle('active', mode==='online');
+  document.getElementById('panelBlinds').classList.toggle('active', mode==='blinds');
+  document.getElementById('menuTriggerLabel').textContent = MENU_LABELS[mode] || MENU_LABELS.home;
+  document.querySelectorAll('.menu-item').forEach(item=>{
+    item.classList.toggle('active', item.dataset.mode===mode);
+  });
   if(mode==='home') loadScoreboardUI();
 }
 document.querySelectorAll('.mode-card').forEach(card=>{
@@ -1542,24 +1889,79 @@ async function loadScoreboardUI(){
     const res = await fetch(base + '/scoreboard');
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    renderScoreboardUI(data.tally || []);
+    renderScoreboardUI(data.tally || [], data.records || []);
   }catch(e){
     container.innerHTML = '<p class="scan-hint" style="color:#e08a7a;">Scoreboard konnte nicht geladen werden (' + e.message + ').</p>';
   }
 }
-function renderScoreboardUI(tally){
+function formatBreakdown(entry){
+  const parts = [];
+  if(entry.online) parts.push(`${entry.online} Online`);
+  if(entry.manual) parts.push(`${entry.manual} Vor-Ort`);
+  return parts.length ? ` (${parts.join(', ')})` : '';
+}
+function formatDateDE(isoDate){
+  const parts = (isoDate||'').split('-');
+  return parts.length===3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : isoDate;
+}
+function renderRecentEntries(records){
+  if(!records.length) return '';
+  const recent = records.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'')).slice(0,15);
+  const rows = recent.map((r,idx)=>{
+    const badge = r.source==='online' ? '🌐 Online' : '🏠 Vor-Ort';
+    const noteStr = r.note ? ` — ${r.note}` : '';
+    let detailHtml = '';
+    if(r.details || (Array.isArray(r.standings) && r.standings.length)){
+      const d = r.details || {};
+      const bits = [];
+      if(d.handsPlayed) bits.push(`${d.handsPlayed} Hände`);
+      if(d.durationMinutes) bits.push(`${d.durationMinutes} Min`);
+      if(d.biggestPot) bits.push(`Größter Pot: $${d.biggestPot}${d.biggestPotWinnerNames ? ' ('+d.biggestPotWinnerNames+')' : ''}`);
+      const placeStr = (r.standings||[]).map(s=>`${s.place}. ${s.name}`).join(' · ');
+      detailHtml = `<div style="padding:6px 12px 10px 12px; font-size:0.74rem; color:var(--ink-dim); line-height:1.6;">
+        ${bits.length ? bits.join(' · ')+'<br>' : ''}${placeStr ? 'Platzierung: '+placeStr : ''}
+      </div>`;
+    }
+    return `<div>
+      <div class="scoreboard-row" style="font-size:0.82rem; ${detailHtml?'cursor:pointer;':''}" ${detailHtml?`onclick="toggleScoreboardDetail(${idx})"`:''}>
+        <span class="scoreboard-rank" style="width:auto; font-weight:400; color:var(--ink-dim); font-family:Menlo,monospace; font-size:0.76rem;">${formatDateDE(r.date)}</span>
+        <span class="scoreboard-name" style="font-weight:600;">${r.name}${detailHtml?' <span style="opacity:0.5; font-size:0.7rem;">▾</span>':''}</span>
+        <span class="scoreboard-wins" style="font-family:inherit; font-size:0.78rem;">${badge}${noteStr}</span>
+      </div>
+      ${detailHtml ? `<div id="sbDetail${idx}" style="display:none;">${detailHtml}</div>` : ''}
+    </div>`;
+  }).join('');
+  return `<div style="margin-top:18px;">
+    <div class="eyebrow" style="font-size:0.68rem; margin-bottom:8px;">Letzte Einträge <span style="font-weight:400; text-transform:none; letter-spacing:0; opacity:0.6;">(antippen für Details)</span></div>
+    <div class="scoreboard-list">${rows}</div>
+  </div>`;
+}
+function toggleScoreboardDetail(idx){
+  const el = document.getElementById('sbDetail'+idx);
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+function renderScoreboardUI(tally, records){
   const container = document.getElementById('scoreboardArea');
   if(!tally.length){
     container.innerHTML = '<p class="scan-hint">Noch keine Einträge — sei die erste Person auf dem Board.</p>';
     return;
   }
   const medals = ['🥇','🥈','🥉'];
-  container.innerHTML = '<div class="scoreboard-list">' + tally.map((entry,i)=>`
-    <div class="scoreboard-row">
-      <span class="scoreboard-rank">${medals[i] || (i+1)+'.'}</span>
-      <span class="scoreboard-name">${entry.name}</span>
-      <span class="scoreboard-wins">${entry.wins} ${entry.wins===1?'Sieg':'Siege'}</span>
-    </div>`).join('') + '</div>';
+  const leaderboard = '<div class="scoreboard-list">' + tally.map((entry,i)=>{
+    const stats = [];
+    if(entry.events) stats.push(`${entry.events} Teilnahme${entry.events===1?'':'n'}`);
+    if(entry.bestPlace) stats.push(`Beste: ${entry.bestPlace}. Platz`);
+    if(entry.totalBuyins) stats.push(`${entry.totalBuyins} Buy-ins`);
+    return `<div style="background:rgba(0,0,0,0.2); border-radius:6px; border:1px solid rgba(201,162,75,0.15); padding:9px 12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="scoreboard-rank">${medals[i] || (i+1)+'.'}</span>
+        <span class="scoreboard-name">${entry.name}</span>
+        <span class="scoreboard-wins">${entry.wins} ${entry.wins===1?'Sieg':'Siege'}${formatBreakdown(entry)}</span>
+      </div>
+      ${stats.length ? `<div style="font-size:0.72rem; color:var(--ink-dim); margin-top:3px; padding-left:36px;">${stats.join(' · ')}</div>` : ''}
+    </div>`;
+  }).join('') + '</div>';
+  container.innerHTML = leaderboard + renderRecentEntries(records||[]);
 }
 
 const scoreboardNameInput = document.getElementById('scoreboardName');
@@ -1607,7 +2009,7 @@ function pickBotNames(n){
 
 function cardsToText(cards){ return cards.map(c=>rankChar(c.rank)+SUIT_SYM[c.suit]).join(' '); }
 
-function createBotGame(numBots){
+function createBotGame(numBots, difficulty){
   const names = pickBotNames(numBots);
   const players = [{ id:0, name:heroLabel(), isHuman:true, stack:1000, hole:[], folded:false, allIn:false, out:false, betThisStreet:0, totalThisHand:0, hasActed:false, lastAction:null }];
   for(let i=1;i<=numBots;i++){
@@ -1617,7 +2019,7 @@ function createBotGame(numBots){
     players, dealerIndex:-1, sbIndex:-1, bbIndex:-1, community:[], pot:0, street:'preflop',
     currentBetToCall:0, minRaise:20, smallBlind:10, bigBlind:20,
     toActIndex:-1, handActive:false, deck:[], log:[],
-    humanEquity:null, lastEquityKey:null,
+    humanEquity:null, lastEquityKey:null, botDifficulty: difficulty || 'hard',
     animatingDeal:false, pendingRenderAfterDeal:false
   };
 }
@@ -1647,6 +2049,16 @@ function seatAngles(botCount){
   const step = arc/(botCount+1);
   const angles=[];
   for(let i=1;i<=botCount;i++){ angles.push((start + step*i) % 360); }
+  return angles;
+}
+// Für Zuschauer:innen: keine Position ist "die eigene", also keine Lücke am
+// unteren Rand reservieren — alle Sitzplätze gleichmäßig über den ganzen
+// Kreis verteilen.
+function seatAnglesFull(count){
+  if(count<=0) return [];
+  const step = 360/count;
+  const angles=[];
+  for(let i=0;i<count;i++){ angles.push(i*step); }
   return angles;
 }
 function estimateEquity(cards, knownBoard, opponents, trials){
@@ -1903,14 +2315,17 @@ function showdown(){
     }
   });
 
-  const winnerMsgs = [];
   Object.entries(payouts).forEach(([id,amount])=>{
     const p = bg.players.find(pl=>pl.id===parseInt(id,10));
     p.stack += amount;
-    const label = p.name;
-    winnerMsgs.push(`${label} ${winVerb(p)} $${amount} insgesamt`);
   });
-  showRoundBanner('🏆 ' + winnerMsgs.join(' · ') + (multiLayer ? ' (Haupt- + Seitentopf — Details im Verlauf)' : ''));
+  const bannerParts = potLayers.map((layer,idx)=>{
+    const label = multiLayer ? (idx===0?'Hauptpot':`Seitentopf ${idx}`) + ': ' : '';
+    const names = layer.winners.map(w=>w.name).join(' & ');
+    const verb = layer.winners.length===1 ? winVerb(layer.winners[0]) : 'gewinnen';
+    return `${label}${names} ${verb} $${layer.amount} mit ${HAND_TYPE_NAMES[layer.hand[0]]}`;
+  });
+  showRoundBanner(`🏆 ${bannerParts.join(' · ')}`);
   bg.pot = 0;
   bg.street = 'showdown';
   renderTable({revealAll:true});
@@ -1945,7 +2360,71 @@ function endHandUI(){
   document.getElementById('nextHandBtn').style.display='block';
 }
 
-async function botAct(idx){
+// Wie weit ist dieser Sitzplatz vom Dealer entfernt (unter den noch aktiven
+// Spielern)? 0 = ist selbst der Dealer (beste Position), höher = früher/schlechter.
+function getPositionFactor(idx){
+  const activeIdxs = bg.players.map((p,i)=>i).filter(i=>!bg.players[i].folded && !bg.players[i].out);
+  const n = activeIdxs.length;
+  if(n<=1) return 0.5;
+  const dealerPos = Math.max(0, activeIdxs.indexOf(bg.dealerIndex));
+  const myPos = activeIdxs.indexOf(idx);
+  if(myPos<0) return 0.5;
+  const seatsAfterMe = (dealerPos - myPos + n) % n;
+  return seatsAfterMe / (n-1); // 0 (spät/Dealer) .. 1 (früh)
+}
+
+// Grobe, absichtlich unpräzise Handstärke-Schätzung ohne Monte-Carlo-Equity —
+// simuliert einen Anfänger, der nur nach Optik entscheidet statt echte Odds
+// zu rechnen.
+// Nicht-lineare Näherung, wie stark jeder Handtyp typischerweise ist —
+// eine reine lineare Skala (best[0]/8) würde z.B. ein einfaches Paar auf
+// nur 0.24 abbilden, weit unter vergleichbaren Preflop-Werten, wodurch der
+// Bot postflop selbst mit brauchbaren Händen ständig folden würde.
+const ROUGH_HAND_TYPE_STRENGTH = [0.15, 0.45, 0.60, 0.70, 0.80, 0.85, 0.92, 0.97, 1.0];
+function roughHandStrength(hole, community){
+  if(community.length===0){
+    const [a,b] = hole;
+    const highCard = Math.max(a.rank,b.rank);
+    const pair = a.rank===b.rank;
+    const suited = a.suit===b.suit;
+    const gap = Math.abs(a.rank-b.rank);
+    let score = highCard/14;
+    if(pair) score += 0.35;
+    if(suited) score += 0.08;
+    if(gap<=1) score += 0.05;
+    return Math.min(1, score);
+  }
+  const best = evaluateBest(hole.concat(community));
+  return ROUGH_HAND_TYPE_STRENGTH[best[0]];
+}
+
+async function botActEasy(idx){
+  const p = bg.players[idx];
+  const toCall = bg.currentBetToCall - p.betThisStreet;
+  const strength = roughHandStrength(p.hole, bg.community);
+  const r = Math.random();
+  const effective = strength + (Math.random()-0.5)*0.5; // viel Rauschen — trifft auch mal schlechte Entscheidungen
+
+  if(toCall<=0){
+    if(effective>0.55 && r<0.45 && p.stack>0){
+      const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, bg.bigBlind*2));
+      playerBetRaise(idx, raiseTo);
+    } else {
+      playerCheck(idx);
+    }
+    return;
+  }
+  if(effective<0.4 && r>0.15){
+    playerFold(idx);
+  } else if(effective>0.75 && r<0.4 && p.stack>toCall){
+    const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, bg.bigBlind*2));
+    playerBetRaise(idx, raiseTo);
+  } else {
+    playerCall(idx);
+  }
+}
+
+async function botActHard(idx){
   const p = bg.players[idx];
   const opponentsActive = bg.players.filter((pl,i)=>i!==idx && !pl.folded && !pl.out).length;
   const trials = opponentsActive<=2 ? 500 : 300;
@@ -1954,23 +2433,38 @@ async function botAct(idx){
   const potOdds = toCall>0 ? toCall/(bg.pot+toCall) : 0;
   const r = Math.random();
 
+  const posFactor = getPositionFactor(idx); // 0 (spät) .. 1 (früh)
+  const posAdjust = (posFactor - 0.5) * 0.10; // früh: strenger, spät: lockerer
+  const spr = p.stack / Math.max(1, bg.pot); // Stack-to-Pot-Ratio
+  const sprAdjust = spr<3 ? -0.06 : (spr>12 ? 0.03 : 0); // kurzer Stack: eher committen
+
   if(toCall<=0){
-    if(equity>0.65 && r<0.55 && p.stack>0){
-      const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, Math.round((bg.pot||bg.bigBlind)*0.66)));
+    const openThreshold = 0.58 + posAdjust;
+    if(equity>openThreshold && r<0.55 && p.stack>0){
+      const sizing = spr<3 ? 1.0 : 0.66;
+      const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, Math.round((bg.pot||bg.bigBlind)*sizing)));
       playerBetRaise(idx, raiseTo);
     } else {
       playerCheck(idx);
     }
     return;
   }
-  if(equity < potOdds - 0.04 && r>0.08){
+  const foldThreshold = potOdds - 0.04 + posAdjust + sprAdjust;
+  const raiseThreshold = potOdds + 0.22 + posAdjust;
+  if(equity < foldThreshold && r>0.08){
     playerFold(idx);
-  } else if(equity > potOdds + 0.22 && r<0.55 && p.stack>toCall){
-    const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, Math.round((bg.pot||bg.bigBlind)*0.75)));
+  } else if(equity > raiseThreshold && r<0.55 && p.stack>toCall){
+    const sizing = spr<3 ? 1.0 : 0.75;
+    const raiseTo = Math.min(p.betThisStreet+p.stack, bg.currentBetToCall + Math.max(bg.minRaise, Math.round((bg.pot||bg.bigBlind)*sizing)));
     playerBetRaise(idx, raiseTo);
   } else {
     playerCall(idx);
   }
+}
+
+async function botAct(idx){
+  if(bg.botDifficulty==='easy') return botActEasy(idx);
+  return botActHard(idx);
 }
 
 function enableHumanActions(){
@@ -2106,13 +2600,13 @@ function renderTable(opts){
   let seatsHtml = bots.map((p,i)=>renderSeat(p, angles[i], false, opts.animateHole, compact)).join('');
   if(human) seatsHtml += renderSeat(human, 180, true, opts.animateHole, compact);
 
-  el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table">
+  el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table-rail"><div class="poker-table">
     <div class="table-center">
       <div class="pot-badge">Pot: $${bg.pot}</div>
       <div class="table-community">${communityHtml}</div>
     </div>
     ${seatsHtml}
-  </div></div>`;
+  </div></div></div>`;
   if(opts.animateHole) animateDealtHoleCards(el);
   renderLog();
 }
@@ -2124,7 +2618,8 @@ function renderLog(){
 
 document.getElementById('startGameBtn').addEventListener('click', ()=>{
   const numBots = parseInt(document.getElementById('numBots').value,10);
-  bg = createBotGame(numBots);
+  const difficulty = document.getElementById('botDifficulty').value;
+  bg = createBotGame(numBots, difficulty);
   document.getElementById('botSetup').style.display='none';
   document.getElementById('botGameArea').style.display='block';
   document.getElementById('restartGameBtn').style.display='none';
@@ -2154,7 +2649,19 @@ document.getElementById('leaveGameBtn').addEventListener('click', ()=>{
 // gesteuert vom Server statt lokal — eigene Handkarten kommen ausschließlich
 // über eine private "your_hand"-Nachricht an, nie über den geteilten Zustand.
 // ---------------------------------------------------------------------
-let net = { ws:null, playerId:null, isHost:false, roomCode:null, state:null, myHole:null, revealed:null, timerInterval:null };
+let net = { ws:null, playerId:null, isHost:false, isSpectator:false, roomCode:null, serverUrl:null, state:null, myHole:null, revealed:null, timerInterval:null, intentionalLeave:false, reconnecting:false, autoRebuySent:false, notifyEnabled:false, wasMyTurn:false, myCardsShown:false, settingsTouched:false };
+
+function onlineSaveSession(){
+  try{
+    sessionStorage.setItem('pokerabend_session', JSON.stringify({ code:net.roomCode, playerId:net.playerId, serverUrl:net.serverUrl }));
+  }catch(e){}
+}
+function onlineClearSession(){
+  try{ sessionStorage.removeItem('pokerabend_session'); }catch(e){}
+}
+function onlineGetSession(){
+  try{ return JSON.parse(sessionStorage.getItem('pokerabend_session')); }catch(e){ return null; }
+}
 
 function onlineSaveDefaults(){
   try{
@@ -2174,10 +2681,61 @@ function onlineLoadDefaults(){
 }
 onlineLoadDefaults();
 
+// ---------------------------------------------------------------------
+// Avatar- und Farbauswahl (muss zur Liste im Server passen)
+// ---------------------------------------------------------------------
+const AVATARS = ['🦊','🐻','🦅','🐺','🦁','🐯','🦉','🐨','🐸','🦈','🐙','🦖'];
+const PLAYER_COLORS = ['#d06a56','#6b96d6','#7fb89a','#c9a24b','#a87fd6','#d68fb0'];
+let myAvatar = AVATARS[0], myColor = PLAYER_COLORS[0];
+
+function onlineRenderPickers(){
+  document.getElementById('onlineAvatarPicker').innerHTML = AVATARS.map(a=>
+    `<button onclick="onlinePickAvatar('${a}')" style="font-size:1.35rem; line-height:1; width:42px; height:42px; border-radius:8px; cursor:pointer; background:${a===myAvatar?'rgba(201,162,75,0.25)':'rgba(0,0,0,0.2)'}; border:2px solid ${a===myAvatar?'var(--gold)':'rgba(201,162,75,0.2)'};">${a}</button>`
+  ).join('');
+  document.getElementById('onlineColorPicker').innerHTML = PLAYER_COLORS.map(c=>
+    `<button onclick="onlinePickColor('${c}')" style="width:34px; height:34px; border-radius:50%; cursor:pointer; background:${c}; border:3px solid ${c===myColor?'var(--gold)':'rgba(255,255,255,0.2)'};"></button>`
+  ).join('');
+}
+function onlinePickAvatar(a){
+  myAvatar = a;
+  try{ localStorage.setItem('pokerabend_avatar', a); }catch(e){}
+  onlineRenderPickers();
+}
+function onlinePickColor(c){
+  myColor = c;
+  try{ localStorage.setItem('pokerabend_color', c); }catch(e){}
+  onlineRenderPickers();
+}
+(function onlineInitPickers(){
+  try{
+    const a = localStorage.getItem('pokerabend_avatar');
+    const c = localStorage.getItem('pokerabend_color');
+    if(AVATARS.includes(a)) myAvatar = a;
+    if(PLAYER_COLORS.includes(c)) myColor = c;
+  }catch(e){}
+  onlineRenderPickers();
+})();
+
 function onlineStatus(msg, isError){
   const el = document.getElementById('onlineConnectStatus');
   el.textContent = msg;
   el.style.color = isError ? '#e08a7a' : '';
+}
+
+function onlineWireSocket(){
+  net.ws.addEventListener('message', onlineHandleMessage);
+  net.ws.addEventListener('close', ()=>{
+    if(net.intentionalLeave){ onlineReturnToConnect(); return; }
+    const wasActive = document.getElementById('onlineGameView').style.display!=='none' || document.getElementById('onlineWaitView').style.display!=='none';
+    if(!wasActive){ onlineReturnToConnect(); return; }
+    // Verbindung unerwartet weg (Tab in den Hintergrund, kurzer Netzwerk-Hänger o.ä.) —
+    // erst automatisch versuchen zurückzuverbinden, statt sofort rauszuwerfen.
+    onlineShowReconnectBanner('Verbindung unterbrochen — verbinde automatisch neu…');
+    onlineAttemptReconnect();
+  });
+  net.ws.addEventListener('error', ()=>{
+    onlineStatus('Verbindung fehlgeschlagen. Adresse und Server-Status prüfen.', true);
+  });
 }
 
 function onlineConnect(onOpenSend){
@@ -2185,37 +2743,133 @@ function onlineConnect(onOpenSend){
   if(!url){ onlineStatus('Bitte Server-Adresse eintragen.', true); return; }
   if(!/^wss?:\/\//.test(url)){ onlineStatus('Adresse muss mit ws:// oder wss:// beginnen.', true); return; }
   onlineSaveDefaults();
+  net.serverUrl = url;
+  net.intentionalLeave = false;
   onlineStatus('Verbinde…');
   try{ net.ws = new WebSocket(url); }
   catch(e){ onlineStatus('Verbindung fehlgeschlagen: ' + e.message, true); return; }
-
   net.ws.addEventListener('open', onOpenSend);
-  net.ws.addEventListener('message', onlineHandleMessage);
-  net.ws.addEventListener('close', ()=>{
-    const wasActive = document.getElementById('onlineGameView').style.display!=='none' || document.getElementById('onlineWaitView').style.display!=='none';
-    if(wasActive) alert('Verbindung zum Server verloren — kein automatischer Reconnect in dieser Version. Bitte neu verbinden.');
-    onlineReturnToConnect();
-  });
-  net.ws.addEventListener('error', ()=>{
-    onlineStatus('Verbindung fehlgeschlagen. Adresse und Server-Status prüfen.', true);
-  });
+  onlineWireSocket();
 }
+
+function onlineShowReconnectBanner(text){
+  let el = document.getElementById('onlineReconnectBanner');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'onlineReconnectBanner';
+    el.className = 'round-banner';
+    el.style.background = 'rgba(201,162,75,0.15)';
+    el.style.borderColor = 'rgba(201,162,75,0.5)';
+    el.style.color = 'var(--gold)';
+    const gameView = document.getElementById('onlineGameView');
+    gameView.parentNode.insertBefore(el, gameView);
+  }
+  el.textContent = text;
+  el.style.display = 'block';
+}
+function onlineHideReconnectBanner(){
+  const el = document.getElementById('onlineReconnectBanner');
+  if(el) el.style.display = 'none';
+}
+
+function onlineAttemptReconnect(attempt){
+  attempt = attempt || 1;
+  const session = onlineGetSession();
+  if(!session || !session.serverUrl || !session.code || !session.playerId){
+    onlineHideReconnectBanner();
+    alert('Verbindung verloren und keine Sitzung zum Wiederherstellen gefunden — bitte neu verbinden.');
+    onlineReturnToConnect();
+    return;
+  }
+  if(attempt > 6){
+    onlineHideReconnectBanner();
+    alert('Konnte die Verbindung nach mehreren Versuchen nicht wiederherstellen — bitte neu verbinden.');
+    onlineReturnToConnect();
+    return;
+  }
+  net.reconnecting = true;
+  let ws;
+  try{ ws = new WebSocket(session.serverUrl); }
+  catch(e){ setTimeout(()=>onlineAttemptReconnect(attempt+1), 1500); return; }
+  const timeout = setTimeout(()=>{ try{ ws.close(); }catch(e){} }, 4000);
+  ws.addEventListener('open', ()=>{
+    ws.send(JSON.stringify({ type:'reconnect', code:session.code, playerId:session.playerId }));
+  });
+  ws.addEventListener('message', (ev)=>{
+    let msg; try{ msg = JSON.parse(ev.data); }catch(e){ return; }
+    if(msg.type==='joined'){
+      clearTimeout(timeout);
+      net.ws = ws;
+      net.playerId = msg.playerId; net.isHost = msg.isHost; net.isSpectator = !!msg.isSpectator; net.roomCode = msg.code; net.serverUrl = session.serverUrl;
+      net.reconnecting = false;
+      net.wasMyTurn = false; // nach einer Verbindungslücke lieber einmal zu viel benachrichtigen als einmal zu wenig
+      onlineWireSocket();
+      onlineHideReconnectBanner();
+      onlineSaveSession();
+      return;
+    }
+    if(msg.type==='error'){
+      clearTimeout(timeout);
+      onlineHideReconnectBanner();
+      alert('Zurückverbinden nicht möglich: ' + msg.message + ' — Sitzung wird zurückgesetzt.');
+      onlineReturnToConnect();
+      return;
+    }
+    // Any other message arriving before we've fully rewired means we're already set up — hand off.
+    onlineHandleMessage(ev);
+  });
+  ws.addEventListener('close', ()=>{
+    if(net.reconnecting){
+      clearTimeout(timeout);
+      setTimeout(()=>onlineAttemptReconnect(attempt+1), 1500);
+    }
+  });
+  ws.addEventListener('error', ()=>{});
+}
+
+// Wenn der Tab wieder sichtbar wird (z.B. nach dem Kopieren des Raum-Codes oder App-Wechsel),
+// sofort prüfen statt zu warten, bis der Browser die tote Verbindung selbst bemerkt.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState!=='visible') return;
+  const gameOrWait = document.getElementById('onlineGameView').style.display!=='none' || document.getElementById('onlineWaitView').style.display!=='none';
+  if(gameOrWait && !net.reconnecting && (!net.ws || net.ws.readyState!==WebSocket.OPEN)){
+    onlineShowReconnectBanner('Verbindung wird geprüft…');
+    onlineAttemptReconnect();
+  }
+});
 
 document.getElementById('onlineCreateBtn').addEventListener('click', ()=>{
   const name = document.getElementById('onlineName').value.trim() || 'Spieler';
-  onlineConnect(()=>{ net.ws.send(JSON.stringify({type:'create_room', name})); });
+  onlineConnect(()=>{ net.ws.send(JSON.stringify({type:'create_room', name, avatar:myAvatar, color:myColor})); });
 });
 document.getElementById('onlineJoinBtn').addEventListener('click', ()=>{
   const name = document.getElementById('onlineName').value.trim() || 'Spieler';
   const code = document.getElementById('onlineJoinCode').value.trim().toUpperCase();
+  const spectate = document.getElementById('onlineSpectateCheck').checked;
   if(!code){ onlineStatus('Bitte Raum-Code eingeben.', true); return; }
-  onlineConnect(()=>{ net.ws.send(JSON.stringify({type:'join_room', code, name})); });
+  onlineConnect(()=>{ net.ws.send(JSON.stringify({type:'join_room', code, name, spectate, avatar:myAvatar, color:myColor})); });
 });
-document.getElementById('onlineLeaveBtn').addEventListener('click', ()=>{
-  if(net.ws) net.ws.close();
+function onlineLeaveRoom(){
+  if(!confirm('Tisch wirklich verlassen? Das ist endgültig — dein Platz kann danach nicht mehr zurückgeholt werden.')) return;
+  net.intentionalLeave = true;
+  if(net.ws) net.ws.send(JSON.stringify({type:'leave'}));
+  onlineClearSession();
   onlineReturnToConnect();
-});
+}
+document.getElementById('onlineLeaveBtn').addEventListener('click', onlineLeaveRoom);
+document.getElementById('onlineWaitLeaveBtn').addEventListener('click', onlineLeaveRoom);
 document.getElementById('onlineStartBtn').addEventListener('click', ()=>{ net.ws.send(JSON.stringify({type:'start_game'})); });
+function onlineSendSettings(){
+  if(!net.ws || net.ws.readyState!==WebSocket.OPEN) return;
+  net.settingsTouched = true;
+  net.ws.send(JSON.stringify({
+    type:'room_settings',
+    turnSeconds: parseInt(document.getElementById('onlineTurnSecondsSelect').value, 10),
+    blindIncreaseEvery: parseInt(document.getElementById('onlineBlindIncreaseSelect').value, 10)
+  }));
+}
+document.getElementById('onlineTurnSecondsSelect').addEventListener('change', onlineSendSettings);
+document.getElementById('onlineBlindIncreaseSelect').addEventListener('change', onlineSendSettings);
 document.getElementById('onlineNextHandBtn').addEventListener('click', ()=>{ net.ws.send(JSON.stringify({type:'next_hand'})); });
 
 document.getElementById('onlineActFold').addEventListener('click', ()=>net.ws.send(JSON.stringify({type:'action', action:'fold'})));
@@ -2233,6 +2887,16 @@ document.getElementById('onlineActRaise').addEventListener('click', ()=>{
 });
 document.getElementById('onlineRaiseAmount').addEventListener('input', function(){ this.dataset.userEdited='1'; });
 
+function onlineSendChat(){
+  const input = document.getElementById('onlineChatInput');
+  const text = input.value.trim();
+  if(!text || !net.ws || net.ws.readyState!==WebSocket.OPEN) return;
+  net.ws.send(JSON.stringify({type:'chat', text}));
+  input.value = '';
+}
+document.getElementById('onlineChatSendBtn').addEventListener('click', onlineSendChat);
+document.getElementById('onlineChatInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') onlineSendChat(); });
+
 function onlineGetMe(){
   if(!net.state) return null;
   return net.state.players.find(p=>p.id===net.playerId) || null;
@@ -2243,22 +2907,60 @@ function onlineHandleMessage(ev){
   try{ msg = JSON.parse(ev.data); } catch(e){ return; }
 
   if(msg.type==='joined'){
-    net.playerId = msg.playerId; net.isHost = msg.isHost; net.roomCode = msg.code;
+    net.playerId = msg.playerId; net.isHost = msg.isHost; net.isSpectator = !!msg.isSpectator; net.roomCode = msg.code;
     document.getElementById('onlineConnectView').style.display='none';
     document.getElementById('onlineRoomCodeDisplay').textContent = msg.code;
     document.getElementById('onlineRoomCodeSmall').textContent = msg.code;
+    onlineSaveSession();
     return;
   }
   if(msg.type==='error'){ onlineStatus(msg.message, true); return; }
-  if(msg.type==='room_state'){ net.state = msg; onlineRenderAll(); return; }
-  if(msg.type==='your_hand'){ net.myHole = msg.hole; net.revealed = null; onlineRenderAll(); return; }
+  if(msg.type==='room_state'){
+    const wasHandActive = net.state ? net.state.handActive : false;
+    net.state = msg;
+    if(!net.isSpectator) net.isHost = (msg.hostId === net.playerId);
+    if(msg.handActive && !wasHandActive){ net.revealed = null; net.myCardsShown = false; }
+    onlineRenderAll();
+    return;
+  }
+  if(msg.type==='your_hand'){ net.myHole = msg.hole; net.revealed = null; net.myCardsShown = false; onlineRenderAll(); return; }
   if(msg.type==='showdown_reveal'){ net.revealed = msg.hands; onlineRenderAll(); return; }
+  if(msg.type==='cards_shown'){
+    if(!net.revealed) net.revealed = {};
+    net.revealed[msg.playerId] = msg.hole;
+    if(msg.playerId===net.playerId) net.myCardsShown = true;
+    onlineRenderAll();
+    return;
+  }
   if(msg.type==='hand_result'){
-    const rb = document.getElementById('onlineRoundBanner');
-    rb.textContent = msg.roundBanner; rb.style.display='block';
+    if(msg.roundBanner){
+      const rb = document.getElementById('onlineRoundBanner');
+      rb.textContent = msg.roundBanner; rb.style.display='block';
+    }
     if(msg.gameOver){
       const gb = document.getElementById('onlineGameOverBanner');
-      gb.textContent = msg.gameOver; gb.style.display='block';
+      let html = msg.gameOver;
+      if(msg.recap){
+        const r = msg.recap;
+        const parts = [];
+        if(r.handsPlayed) parts.push(`${r.handsPlayed} Hände`);
+        if(r.durationMinutes) parts.push(`${r.durationMinutes} Min`);
+        if(r.biggestPot) parts.push(`Größter Pot: $${r.biggestPot}${r.biggestPotWinnerNames ? ' ('+r.biggestPotWinnerNames+')' : ''}`);
+        if(r.mostHandsWonName) parts.push(`Meiste Hände: ${r.mostHandsWonName} (${r.mostHandsWonCount})`);
+        if(parts.length) html += `<div style="margin-top:8px; font-size:0.82rem; font-weight:400; opacity:0.9;">${parts.join(' · ')}</div>`;
+        if(Array.isArray(r.standings) && r.standings.length){
+          const medals = ['🥇','🥈','🥉'];
+          const rows = r.standings.map((s,i)=>
+            `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;">
+               <span>${medals[i] || (s.place+'.')} ${s.name}${s.buyins>1 ? ' <span style="opacity:0.6;">('+s.buyins+' Buy-ins)</span>' : ''}</span>
+               <span style="font-family:Menlo,monospace; opacity:0.8;">$${s.finalStack}</span>
+             </div>`).join('');
+          html += `<div style="margin-top:10px; text-align:left; font-size:0.82rem; font-weight:400; border-top:1px solid rgba(201,162,75,0.25); padding-top:8px;">${rows}</div>`;
+        }
+      }
+      gb.innerHTML = html;
+      gb.style.display='block';
+      onlineClearSession();
     }
     return;
   }
@@ -2266,10 +2968,15 @@ function onlineHandleMessage(ev){
 
 function onlineReturnToConnect(){
   clearInterval(net.timerInterval);
-  net = { ws:null, playerId:null, isHost:false, roomCode:null, state:null, myHole:null, revealed:null, timerInterval:null };
+  onlineHideReconnectBanner();
+  onlineClearSession();
+  net = { ws:null, playerId:null, isHost:false, isSpectator:false, roomCode:null, serverUrl:null, state:null, myHole:null, revealed:null, timerInterval:null, intentionalLeave:false, reconnecting:false, autoRebuySent:false, notifyEnabled:false, wasMyTurn:false, myCardsShown:false, settingsTouched:false };
   document.getElementById('onlineConnectView').style.display='block';
   document.getElementById('onlineWaitView').style.display='none';
   document.getElementById('onlineGameView').style.display='none';
+  document.getElementById('onlineRoundBanner').style.display='none';
+  document.getElementById('onlineGameOverBanner').style.display='none';
+  onlineUpdateNotifyBtnLabel();
   onlineStatus('');
 }
 
@@ -2282,28 +2989,86 @@ function onlineRenderAll(){
     document.getElementById('onlineWaitView').style.display='block';
     document.getElementById('onlineGameView').style.display='none';
     const list = document.getElementById('onlinePlayerList');
-    list.innerHTML = state.players.map(p=>`<div style="padding:3px 0;">${p.connected?'🟢':'⚪'} ${p.name}${p.id===net.playerId?' (Du)':''}${p.id===state.hostId?' — Host':''}</div>`).join('');
-    document.getElementById('onlineStartBtn').style.display = net.isHost ? 'block' : 'none';
-    document.getElementById('onlineWaitHint').textContent = net.isHost
-      ? (state.players.filter(p=>p.connected).length<2 ? 'Warte auf mindestens einen weiteren Spieler…' : 'Bereit — Spiel starten, sobald alle da sind.')
-      : 'Warte, bis der Host das Spiel startet…';
+    list.innerHTML = state.players.filter(p=>!p.departed).map(p=>{
+      const isMe = p.id===net.playerId;
+      const kickBtn = (net.isHost && !isMe) ? ` <button onclick="onlineKickPlayer('${p.id}')" style="margin-left:6px; background:none; border:1px solid rgba(192,80,63,0.5); color:#e08a7a; border-radius:4px; padding:1px 7px; font-size:0.7rem; cursor:pointer;">Kick</button>` : '';
+      return `<div style="padding:3px 0;">${p.connected?'🟢':'⚪'} <span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:${p.color||'#333'}; font-size:0.72rem; vertical-align:middle;">${p.avatar||''}</span> ${p.name}${isMe?' (Du)':''}${p.id===state.hostId?' — Host':''}${kickBtn}</div>`;
+    }).join('');
+    if(state.spectatorCount) list.innerHTML += `<div style="padding:3px 0; color:var(--ink-dim); font-size:0.82rem;">👀 ${state.spectatorCount} Zuschauer:in${state.spectatorCount===1?'':'nen'}</div>`;
+    document.getElementById('onlineStartBtn').style.display = (net.isHost && !net.isSpectator) ? 'block' : 'none';
+    const settingsBox = document.getElementById('onlineSettingsBox');
+    const canEditSettings = net.isHost && !net.isSpectator;
+    settingsBox.style.display = canEditSettings ? 'block' : 'none';
+    if(canEditSettings && !net.settingsTouched){
+      // Server-Werte übernehmen, solange der Host die Auswahl nicht selbst angefasst hat
+      document.getElementById('onlineTurnSecondsSelect').value = String(state.turnSeconds || 60);
+      document.getElementById('onlineBlindIncreaseSelect').value = String(state.blindIncreaseEvery || 0);
+    }
+    const blindText = state.blindIncreaseEvery
+      ? `Blinds verdoppeln alle ${state.blindIncreaseEvery} Hände`
+      : 'Blinds konstant 10/20';
+    document.getElementById('onlineSettingsSummary').textContent =
+      `${state.turnSeconds || 60}s Bedenkzeit · ${blindText}`;
+    document.getElementById('onlineWaitHint').textContent = net.isSpectator
+      ? 'Du schaust zu — warte, bis der Host das Spiel startet…'
+      : (net.isHost
+        ? (state.players.filter(p=>p.connected).length<2 ? 'Warte auf mindestens einen weiteren Spieler…' : 'Bereit — Spiel starten, sobald alle da sind.')
+        : 'Warte, bis der Host das Spiel startet…');
   } else {
     document.getElementById('onlineWaitView').style.display='none';
     document.getElementById('onlineGameView').style.display='block';
+    document.getElementById('onlineSpectatorCountBadge').textContent = state.spectatorCount ? ` · 👀 ${state.spectatorCount}` : '';
+    document.getElementById('onlineBlindsBadge').textContent = ` · Blinds ${state.smallBlind}/${state.bigBlind}`;
     onlineRenderTable();
     onlineUpdateActionBar();
     onlineUpdateTimer();
   }
 
   const log = document.getElementById('onlineGameLog');
-  log.innerHTML = (state.log||[]).map(m=>`<div>${m}</div>`).join('');
+  log.innerHTML = (state.log||[]).map(m=>{
+    const isChat = m.startsWith('💬');
+    return `<div style="${isChat?'color:var(--ink); font-weight:600;':''}">${m}</div>`;
+  }).join('');
   log.scrollTop = log.scrollHeight;
 
   if(state.handActive){
     document.getElementById('onlineRoundBanner').style.display='none';
     document.getElementById('onlineGameOverBanner').style.display='none';
   }
-  document.getElementById('onlineNextHandBtn').style.display = (net.isHost && !state.handActive && started) ? 'block' : 'none';
+  document.getElementById('onlineNextHandBtn').style.display = (net.isHost && state.paused && started && !state.ended) ? 'block' : 'none';
+  document.getElementById('onlineNextHandBtn').textContent = 'Spiel fortsetzen';
+  const canShowCards = !net.isSpectator && !state.handActive && started && !state.ended
+    && net.myHole && net.myHole.length===2 && !net.myCardsShown
+    && !(net.revealed && net.revealed[net.playerId]);
+  document.getElementById('onlineShowCardsBtn').style.display = canShowCards ? 'block' : 'none';
+  document.getElementById('onlineEndPokerabendBtn').style.display = (net.isHost && !state.handActive && started && !state.ended) ? 'inline-block' : 'none';
+  if(state.ended){
+    const gb = document.getElementById('onlineGameOverBanner');
+    if(gb.style.display!=='block') gb.innerHTML = 'Dieser Pokerabend ist beendet — für die nächste Runde bitte einen neuen Raum erstellen.';
+    gb.style.display = 'block';
+  }
+  onlineRenderHostControls();
+}
+
+function onlineRenderHostControls(){
+  const el = document.getElementById('onlineHostControls');
+  if(!net.isHost || net.isSpectator || !net.state){ el.style.display = 'none'; return; }
+  const others = net.state.players.filter(p=>p.id!==net.playerId && !p.departed);
+  if(!others.length){ el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  document.getElementById('onlineHostPlayerList').innerHTML = others.map(p=>{
+    const statusTag = !p.connected ? ' (offline)' : (p.busted ? ' (pleite)' : '');
+    return `<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem;">
+      <span>${p.connected?'🟢':'⚪'} <span style="display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:${p.color||'#333'}; font-size:0.66rem; vertical-align:middle;">${p.avatar||''}</span> ${p.name}${statusTag}</span>
+      <button onclick="onlineKickPlayer('${p.id}')" style="background:none; border:1px solid rgba(192,80,63,0.5); color:#e08a7a; border-radius:4px; padding:2px 8px; font-size:0.72rem; cursor:pointer;">Kick</button>
+    </div>`;
+  }).join('');
+}
+function onlineKickPlayer(targetId){
+  const target = net.state.players.find(p=>p.id===targetId);
+  if(!target) return;
+  if(!confirm(`${target.name} wirklich aus dem Raum entfernen? Das ist endgültig.`)) return;
+  net.ws.send(JSON.stringify({type:'kick_player', targetId}));
 }
 
 function onlinePosBadge(idx){
@@ -2323,30 +3088,33 @@ function onlineRenderSeat(p, idx, angle, isSelf, compact){
   const posBadge = onlinePosBadge(idx);
 
   let cardsHtml = '';
-  if(p.holeCount>0 && !p.folded){
+  if(net.revealed && net.revealed[p.id]){
+    cardsHtml = net.revealed[p.id].map(c=>cardHTML(c,false)).join('');
+  } else if(p.holeCount>0 && !p.folded && !p.busted){
     if(isSelf && net.myHole) cardsHtml = net.myHole.map(c=>cardHTML(c,false)).join('');
-    else if(net.revealed && net.revealed[p.id]) cardsHtml = net.revealed[p.id].map(c=>cardHTML(c,false)).join('');
     else cardsHtml = '<div class="card-back-mini"></div><div class="card-back-mini"></div>';
   }
   const actionTag = p.lastAction ? `<div class="action-tag ${p.lastAction.cls}">${p.lastAction.label}</div>` : '';
   const disconnectedTag = !p.connected ? ' <span style="font-size:0.65rem; opacity:0.7;">(offline)</span>' : '';
+  const bustedTag = p.busted ? ' · PLEITE' : '';
 
-  return `<div class="seat ${isSelf?'hero-seat':''} ${p.folded?'folded':''} ${isTurn?'active-turn':''} ${compact&&!isSelf?'compact':''}" style="left:${left}%; top:${top}%;">
+  return `<div class="seat ${isSelf?'hero-seat':''} ${(p.folded||p.busted)?'folded':''} ${isTurn?'active-turn':''} ${compact&&!isSelf?'compact':''}" style="left:${left}%; top:${top}%;">
     ${actionTag}
     <div class="seat-cards">${cardsHtml}</div>
-    <div class="stack-box">
+    <div class="stack-box" style="${p.color?`box-shadow:0 3px 6px rgba(0,0,0,0.4), 0 0 0 2px ${p.color};`:''}">
       ${posBadge?`<div class="pos-badge ${posBadge.cls}">${posBadge.label}</div>`:''}
+      ${p.avatar?`<div class="avatar-badge" style="background:${p.color||'#333'};">${p.avatar}</div>`:''}
       <div class="stack-amount">$${p.stack}</div>
-      <div class="stack-name">${isSelf?'Du':p.name}${p.allIn?' · ALL-IN':''}${disconnectedTag}</div>
+      <div class="stack-name">${isSelf?'Du':p.name}${p.allIn?' · ALL-IN':''}${bustedTag}${disconnectedTag}</div>
     </div>
   </div>`;
 }
 function onlineRenderTable(){
   const state = net.state;
   const el = document.getElementById('onlineTableArea');
-  const visible = state.players.filter(p=>!p.out);
+  const visible = state.players.filter(p=>!p.departed);
   const others = visible.filter(p=>p.id!==net.playerId);
-  const angles = seatAngles(others.length);
+  const angles = net.isSpectator ? seatAnglesFull(others.length) : seatAngles(others.length);
   const compact = visible.length>=5;
 
   let communityHtml = '';
@@ -2354,20 +3122,63 @@ function onlineRenderTable(){
 
   let seatsHtml = others.map((p,i)=> onlineRenderSeat(p, state.players.indexOf(p), angles[i], false, compact)).join('');
   const selfPlayer = visible.find(p=>p.id===net.playerId);
-  if(selfPlayer) seatsHtml += onlineRenderSeat(selfPlayer, state.players.indexOf(selfPlayer), 180, true, compact);
+  if(selfPlayer && !net.isSpectator) seatsHtml += onlineRenderSeat(selfPlayer, state.players.indexOf(selfPlayer), 180, true, compact);
 
-  el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table">
+  el.innerHTML = `<div class="poker-table-wrap"><div class="poker-table-rail"><div class="poker-table">
     <div class="table-center">
       <div class="pot-badge">Pot: $${state.pot}</div>
       <div class="table-community">${communityHtml}</div>
     </div>
     ${seatsHtml}
-  </div></div>`;
+  </div></div></div>`;
 }
 
 function onlineUpdateActionBar(){
   const state = net.state;
+  const rebuyArea = document.getElementById('onlineRebuyArea');
+  const actionArea = document.getElementById('onlineActionArea');
+  const raiseRow = document.querySelector('#panelOnline .raise-row');
+  const spectatorNotice = document.getElementById('onlineSpectatorNotice');
+
+  onlineCheckTurnNotification();
+
+  if(net.isSpectator){
+    spectatorNotice.style.display = 'block';
+    rebuyArea.style.display = 'none';
+    actionArea.style.display = 'none';
+    if(raiseRow) raiseRow.style.display = 'none';
+    return;
+  }
+  spectatorNotice.style.display = 'none';
+
   const me = onlineGetMe();
+  if(me && me.busted){
+    rebuyArea.style.display = 'block';
+    actionArea.style.display = 'none';
+    if(raiseRow) raiseRow.style.display = 'none';
+    const rebuyBtn = document.getElementById('onlineRebuyBtn');
+    const rebuyText = document.getElementById('onlineRebuyText');
+    const autoRebuyLabel = document.getElementById('onlineAutoRebuyLabel');
+    if(me.rebuyUsed){
+      rebuyText.textContent = 'Du hast alle Chips verloren — Rebuy bereits aufgebraucht (pro Person nur einmal möglich).';
+      rebuyBtn.style.display = 'none';
+      autoRebuyLabel.style.display = 'none';
+    } else {
+      rebuyText.textContent = 'Du hast alle Chips verloren.';
+      rebuyBtn.style.display = 'block';
+      autoRebuyLabel.style.display = 'flex';
+      if(document.getElementById('onlineAutoRebuyCheck').checked && !net.autoRebuySent){
+        net.autoRebuySent = true;
+        net.ws.send(JSON.stringify({type:'rebuy'}));
+      }
+    }
+    return;
+  }
+  net.autoRebuySent = false;
+  rebuyArea.style.display = 'none';
+  actionArea.style.display = 'flex';
+  if(raiseRow) raiseRow.style.display = 'flex';
+
   const isMyTurn = !!me && state.handActive && state.players.indexOf(me)===state.toActIndex;
   const raiseInput = document.getElementById('onlineRaiseAmount');
   ['onlineActFold','onlineActCheckCall','onlineActAllIn','onlineActRaise','onlineRaiseAmount'].forEach(id=>{
@@ -2383,6 +3194,80 @@ function onlineUpdateActionBar(){
   }
   if(me.stack + me.betThisStreet <= state.currentBetToCall) document.getElementById('onlineActRaise').disabled = true;
 }
+document.getElementById('onlineRebuyBtn').addEventListener('click', ()=>{
+  net.ws.send(JSON.stringify({type:'rebuy'}));
+});
+document.getElementById('onlineShowCardsBtn').addEventListener('click', ()=>{
+  net.ws.send(JSON.stringify({type:'show_cards'}));
+});
+(function onlineInitAutoRebuy(){
+  const check = document.getElementById('onlineAutoRebuyCheck');
+  try{ check.checked = localStorage.getItem('pokerabend_autorebuy')==='1'; }catch(e){}
+  check.addEventListener('change', function(){
+    try{ localStorage.setItem('pokerabend_autorebuy', this.checked?'1':'0'); }catch(e){}
+    // Sofort prüfen statt auf den nächsten Server-Broadcast zu warten — der
+    // typische Fall ist ja gerade, dass man das Häkchen erst setzt, NACHDEM
+    // man schon pleite ist.
+    if(this.checked){
+      const me = onlineGetMe();
+      if(me && me.busted && !me.rebuyUsed && !net.autoRebuySent && net.ws && net.ws.readyState===WebSocket.OPEN){
+        net.autoRebuySent = true;
+        net.ws.send(JSON.stringify({type:'rebuy'}));
+      }
+    }
+  });
+})();
+
+// ---------------------------------------------------------------------
+// "Du bist dran"-Benachrichtigung — nur relevant, wenn der Tab gerade
+// nicht sichtbar ist (sonst sieht man's ja eh direkt am Bildschirm).
+// ---------------------------------------------------------------------
+function onlineNotifySupported(){ return 'Notification' in window; }
+function onlineUpdateNotifyBtnLabel(){
+  const btn = document.getElementById('onlineNotifyBtn');
+  if(!onlineNotifySupported()){ btn.style.display = 'none'; return; }
+  if(Notification.permission==='granted' && net.notifyEnabled){
+    btn.textContent = '🔔 Benachrichtigung an';
+  } else if(Notification.permission==='denied'){
+    btn.textContent = '🔕 Benachrichtigung blockiert (Browser-Einstellungen)';
+  } else {
+    btn.textContent = '🔕 Benachrichtigen, wenn ich dran bin';
+  }
+}
+document.getElementById('onlineNotifyBtn').addEventListener('click', ()=>{
+  if(!onlineNotifySupported()) return;
+  if(Notification.permission==='denied'){ onlineUpdateNotifyBtnLabel(); return; }
+  if(Notification.permission==='granted'){
+    net.notifyEnabled = !net.notifyEnabled;
+    onlineUpdateNotifyBtnLabel();
+    return;
+  }
+  Notification.requestPermission().then(perm=>{
+    net.notifyEnabled = (perm==='granted');
+    onlineUpdateNotifyBtnLabel();
+  });
+});
+onlineUpdateNotifyBtnLabel();
+
+function onlineCheckTurnNotification(){
+  if(!net.state) return;
+  const me = onlineGetMe();
+  const isMyTurn = !!me && !me.busted && net.state.handActive && net.state.players.indexOf(me)===net.state.toActIndex;
+  if(isMyTurn && !net.wasMyTurn && net.notifyEnabled && document.hidden && Notification.permission==='granted'){
+    try{
+      const n = new Notification('Du bist dran!', {
+        body: 'Pokerabend Gametool — dein Zug am Tisch (Raum ' + (net.roomCode||'') + ').',
+        icon: 'icon-192.png', tag: 'pokerabend-turn'
+      });
+      n.onclick = ()=>{ window.focus(); n.close(); };
+    }catch(e){}
+  }
+  net.wasMyTurn = isMyTurn;
+}
+document.getElementById('onlineEndPokerabendBtn').addEventListener('click', ()=>{
+  if(!confirm('Pokerabend jetzt beenden? Der Sieg geht an die Person mit dem höchsten Stack — wird ins Scoreboard eingetragen. Das lässt sich nicht rückgängig machen.')) return;
+  net.ws.send(JSON.stringify({type:'end_pokerabend'}));
+});
 
 function onlineUpdateTimer(){
   clearInterval(net.timerInterval);
@@ -2398,6 +3283,651 @@ function onlineUpdateTimer(){
   tick();
   net.timerInterval = setInterval(tick, 1000);
 }
+// ---------------------------------------------------------------------
+// Live-Modus — Blind-Planung (Tournament-Clock für den Vor-Ort-Pokerabend)
+// Läuft rein lokal im Browser, kein Server nötig. Zeiten werden als
+// absoluter Zielzeitpunkt (levelEndsAt) statt als reiner Countdown
+// gespeichert, damit ein versehentliches Neuladen der Seite die Uhr nicht
+// durcheinanderbringt — beim Neuladen wird einfach die Differenz zum
+// gespeicherten Zielzeitpunkt neu berechnet.
+// ---------------------------------------------------------------------
+let blindPlan = {
+  levels: [], currentIndex: -1, levelEndsAt: null, pausedRemainingMs: null,
+  running: false, soundOn: true, tickHandle: null
+};
+
+function blindRoundToClean(v){
+  v = Math.max(1, v);
+  if(v<100) return Math.round(v/5)*5;
+  if(v<500) return Math.round(v/25)*25;
+  if(v<2000) return Math.round(v/50)*50;
+  if(v<10000) return Math.round(v/100)*100;
+  return Math.round(v/500)*500;
+}
+
+function blindSaveState(){
+  try{ localStorage.setItem('pokerabend_blindplan', JSON.stringify(blindPlan)); }catch(e){}
+}
+function blindLoadState(){
+  try{
+    const raw = localStorage.getItem('pokerabend_blindplan');
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data || !Array.isArray(data.levels) || !data.levels.length) return false;
+    blindPlan = Object.assign(blindPlan, data);
+    return true;
+  }catch(e){ return false; }
+}
+function blindClearState(){
+  try{ localStorage.removeItem('pokerabend_blindplan'); }catch(e){}
+}
+
+function blindGenerateSchedule(){
+  const sb0 = parseInt(document.getElementById('blindStartSB').value,10) || 25;
+  const bb0 = parseInt(document.getElementById('blindStartBB').value,10) || 50;
+  const duration = parseInt(document.getElementById('blindLevelDuration').value,10) || 20;
+  const count = Math.min(30, Math.max(1, parseInt(document.getElementById('blindLevelCount').value,10) || 10));
+  const presetVal = document.getElementById('blindStructurePreset').value;
+
+  let factor, everyN;
+  if(presetVal==='turbo'){ factor=2; everyN=1; }
+  else if(presetVal==='2'){ factor=2; everyN=2; }
+  else { factor=1.5; everyN=2; }
+
+  const levels = [];
+  let sb=sb0, bb=bb0;
+  for(let i=0;i<count;i++){
+    levels.push({ type:'level', sb:blindRoundToClean(sb), bb:blindRoundToClean(bb), ante:0, duration });
+    if((i+1)%everyN===0){ sb*=factor; bb*=factor; }
+  }
+  blindPlan.levels = levels;
+  document.getElementById('blindScheduleEditor').style.display = 'block';
+  blindRenderScheduleEditor();
+  blindSaveState();
+}
+document.getElementById('blindGenerateBtn').addEventListener('click', blindGenerateSchedule);
+
+function blindMoveButtons(i, minMovable){
+  const canUp = (i-1)>minMovable;
+  const canDown = i<blindPlan.levels.length-1;
+  return `<span style="display:flex; flex-direction:column; gap:2px;">
+    <button onclick="blindMoveLevel(${i},-1)" ${canUp?'':'disabled'} style="background:none; border:1px solid rgba(201,162,75,0.35); color:${canUp?'var(--gold)':'rgba(234,227,211,0.25)'}; border-radius:4px; width:22px; height:18px; font-size:0.7rem; line-height:1; cursor:${canUp?'pointer':'default'};">▲</button>
+    <button onclick="blindMoveLevel(${i},1)" ${canDown?'':'disabled'} style="background:none; border:1px solid rgba(201,162,75,0.35); color:${canDown?'var(--gold)':'rgba(234,227,211,0.25)'}; border-radius:4px; width:22px; height:18px; font-size:0.7rem; line-height:1; cursor:${canDown?'pointer':'default'};">▼</button>
+  </span>`;
+}
+function blindMoveLevel(i, direction){
+  const j = i + direction;
+  if(j<0 || j>=blindPlan.levels.length) return;
+  const minMovable = blindPlan.currentIndex>=0 ? blindPlan.currentIndex : -1;
+  if(i<=minMovable || j<=minMovable) return; // vergangene/laufende Level bleiben an ihrem Platz
+  const tmp = blindPlan.levels[i];
+  blindPlan.levels[i] = blindPlan.levels[j];
+  blindPlan.levels[j] = tmp;
+  blindSaveState();
+  if(blindPlan.currentIndex>=0) blindRenderClock(); else blindRenderScheduleEditor();
+}
+function blindRenderScheduleEditor(){
+  const container = document.getElementById('blindScheduleList');
+  container.innerHTML = blindPlan.levels.map((lvl,i)=>{
+    if(lvl.type==='break'){
+      return `<div class="scoreboard-row">
+        ${blindMoveButtons(i, -1)}
+        <span class="scoreboard-rank">${i+1}</span>
+        <span class="scoreboard-name" style="color:var(--gold);">⏸ Pause</span>
+        <input type="number" value="${lvl.duration}" min="1" style="width:60px;" onchange="blindUpdateLevel(${i},'duration',this.value)">
+        <span style="font-size:0.75rem; color:var(--ink-dim);">Min</span>
+        <button onclick="blindRemoveLevel(${i})" style="background:none; border:none; color:#e08a7a; font-size:1.1rem; cursor:pointer; padding:0 6px;">×</button>
+      </div>`;
+    }
+    return `<div class="scoreboard-row" style="flex-wrap:wrap;">
+      ${blindMoveButtons(i, -1)}
+      <span class="scoreboard-rank">${i+1}</span>
+      <span style="display:flex; align-items:center; gap:4px; font-size:0.8rem;">
+        SB <input type="number" value="${lvl.sb}" style="width:55px;" onchange="blindUpdateLevel(${i},'sb',this.value)">
+        / BB <input type="number" value="${lvl.bb}" style="width:55px;" onchange="blindUpdateLevel(${i},'bb',this.value)">
+        / Ante <input type="number" value="${lvl.ante||0}" style="width:50px;" onchange="blindUpdateLevel(${i},'ante',this.value)">
+      </span>
+      <input type="number" value="${lvl.duration}" min="1" style="width:50px;" onchange="blindUpdateLevel(${i},'duration',this.value)">
+      <span style="font-size:0.75rem; color:var(--ink-dim);">Min</span>
+      <button onclick="blindRemoveLevel(${i})" style="background:none; border:none; color:#e08a7a; font-size:1.1rem; cursor:pointer; padding:0 6px; margin-left:auto;">×</button>
+    </div>`;
+  }).join('');
+}
+function blindUpdateLevel(i, field, value){
+  const lvl = blindPlan.levels[i];
+  if(!lvl) return;
+  // Die Dauer des GERADE laufenden Levels lässt sich hier nicht ändern (die
+  // Uhr zählt schon auf einen festen Zielzeitpunkt runter) — dafür gibt es
+  // die ±1-Minute-Buttons. Alles andere ist jederzeit änderbar.
+  if(i===blindPlan.currentIndex && field==='duration') return;
+  lvl[field] = Math.max(0, parseInt(value,10) || 0);
+  blindSaveState();
+  if(blindPlan.currentIndex>=0) blindRenderClock(); else blindRenderScheduleEditor();
+}
+function blindRemoveLevel(i){
+  if(blindPlan.currentIndex>=0 && i<=blindPlan.currentIndex) return; // laufendes/vergangenes Level nicht entfernbar
+  blindPlan.levels.splice(i,1);
+  blindSaveState();
+  if(blindPlan.currentIndex>=0) blindRenderClock(); else blindRenderScheduleEditor();
+}
+function blindAddLevel(){
+  const last = blindPlan.levels[blindPlan.levels.length-1];
+  const sb = last && last.type==='level' ? blindRoundToClean(last.sb*2) : 25;
+  const bb = last && last.type==='level' ? blindRoundToClean(last.bb*2) : 50;
+  const duration = last ? last.duration : (parseInt(document.getElementById('blindLevelDuration').value,10)||20);
+  blindPlan.levels.push({ type:'level', sb, bb, ante:0, duration });
+  blindSaveState();
+  if(blindPlan.currentIndex>=0) blindRenderClock(); else blindRenderScheduleEditor();
+}
+function blindAddBreak(){
+  blindPlan.levels.push({ type:'break', duration:15 });
+  blindSaveState();
+  if(blindPlan.currentIndex>=0) blindRenderClock(); else blindRenderScheduleEditor();
+}
+document.getElementById('blindAddLevelBtn').addEventListener('click', blindAddLevel);
+document.getElementById('blindAddBreakBtn').addEventListener('click', blindAddBreak);
+
+document.getElementById('blindStartClockBtn').addEventListener('click', ()=>{
+  if(!blindPlan.levels.length) return;
+  blindPlan.currentIndex = 0;
+  blindPlan.running = true;
+  blindPlan.levelEndsAt = Date.now() + blindPlan.levels[0].duration*60000;
+  blindPlan.pausedRemainingMs = null;
+  document.getElementById('blindSetupView').style.display = 'none';
+  document.getElementById('blindClockView').style.display = 'block';
+  blindStartTicking();
+  blindRenderClock();
+  blindSaveState();
+});
+
+function blindStartTicking(){
+  clearInterval(blindPlan.tickHandle);
+  blindPlan.tickHandle = setInterval(blindTick, 250);
+}
+function blindTick(){
+  if(!blindPlan.running) return;
+  if(Date.now() >= blindPlan.levelEndsAt){
+    blindAdvanceLevel(true);
+  } else {
+    blindRenderClock();
+  }
+}
+function blindAdvanceLevel(playSound){
+  if(playSound) blindPlayBeep();
+  blindPlan.currentIndex++;
+  if(blindPlan.currentIndex >= blindPlan.levels.length){
+    blindPlan.running = false;
+    blindPlan.currentIndex = blindPlan.levels.length-1;
+    clearInterval(blindPlan.tickHandle);
+    blindRenderClock(true);
+    blindSaveState();
+    return;
+  }
+  blindPlan.levelEndsAt = Date.now() + blindPlan.levels[blindPlan.currentIndex].duration*60000;
+  blindRenderClock();
+  blindSaveState();
+}
+function blindPlayBeep(){
+  if(!blindPlan.soundOn) return;
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.35].forEach(delay=>{
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.001, ctx.currentTime+delay);
+      gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime+delay+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+delay+0.5);
+      osc.start(ctx.currentTime+delay); osc.stop(ctx.currentTime+delay+0.55);
+    });
+  }catch(e){}
+}
+
+function blindLevelText(lvl){
+  if(!lvl) return '';
+  if(lvl.type==='break') return 'PAUSE';
+  return `${lvl.sb} / ${lvl.bb}` + (lvl.ante ? ` (Ante ${lvl.ante})` : '');
+}
+function blindRenderClock(finished){
+  const lvl = blindPlan.levels[blindPlan.currentIndex];
+  const nextLvl = blindPlan.levels[blindPlan.currentIndex+1];
+  const remainMs = finished ? 0 : (blindPlan.running ? Math.max(0, blindPlan.levelEndsAt - Date.now()) : blindPlan.pausedRemainingMs);
+  const totalSec = Math.ceil(remainMs/1000);
+  const mm = Math.floor(totalSec/60), ss = totalSec%60;
+
+  document.getElementById('blindLevelLabel').textContent = finished
+    ? 'Zeitplan beendet'
+    : (lvl.type==='break' ? `Pause — Level ${blindPlan.currentIndex+1} von ${blindPlan.levels.length}` : `Level ${blindPlan.currentIndex+1} von ${blindPlan.levels.length}`);
+  document.getElementById('blindBlindsDisplay').textContent = finished ? '—' : blindLevelText(lvl);
+  document.getElementById('blindTimeDisplay').textContent = finished ? '00:00' : `${mm}:${String(ss).padStart(2,'0')}`;
+  document.getElementById('blindNextLabel').textContent = finished ? '' : (nextLvl ? `Nächstes: ${blindLevelText(nextLvl)}` : 'Letztes Level');
+  document.getElementById('blindPauseBtn').textContent = blindPlan.running ? 'Pause' : 'Weiter';
+
+  blindRenderFullSchedule();
+}
+function blindRenderFullSchedule(){
+  const el = document.getElementById('blindFullSchedule');
+  el.innerHTML = blindPlan.levels.map((lvl,i)=>{
+    const isCurrent = i===blindPlan.currentIndex;
+    const isPast = i<blindPlan.currentIndex;
+    const canEditValues = !isPast;
+    const canRemove = !isPast && !isCurrent;
+    const style = isCurrent ? 'border-color:var(--gold); background:rgba(201,162,75,0.12);' : (isPast ? 'opacity:0.4;' : '');
+    const moveBtns = canRemove ? blindMoveButtons(i, blindPlan.currentIndex) : '';
+    const removeBtn = canRemove
+      ? `<button onclick="blindRemoveLevel(${i})" style="background:none; border:none; color:#e08a7a; font-size:1.1rem; cursor:pointer; padding:0 6px; margin-left:auto;">×</button>`
+      : '';
+    const durationField = (canEditValues && !isCurrent)
+      ? `<input type="number" value="${lvl.duration}" min="1" style="width:46px;" onchange="blindUpdateLevel(${i},'duration',this.value)">`
+      : `<span class="scoreboard-wins">${lvl.duration} Min</span>`;
+
+    if(lvl.type==='break'){
+      return `<div class="scoreboard-row" style="${style} font-size:0.8rem;">
+        ${moveBtns}
+        <span class="scoreboard-rank" style="color:${isCurrent?'var(--gold)':''};">${i+1}</span>
+        <span class="scoreboard-name" style="color:var(--gold); font-weight:${isCurrent?'700':'400'};">⏸ Pause</span>
+        ${durationField}
+        ${removeBtn}
+      </div>`;
+    }
+    const valuesField = canEditValues
+      ? `<span style="display:flex; align-items:center; gap:3px; font-size:0.76rem;">
+           SB <input type="number" value="${lvl.sb}" style="width:48px;" onchange="blindUpdateLevel(${i},'sb',this.value)">
+           / BB <input type="number" value="${lvl.bb}" style="width:48px;" onchange="blindUpdateLevel(${i},'bb',this.value)">
+           / Ante <input type="number" value="${lvl.ante||0}" style="width:42px;" onchange="blindUpdateLevel(${i},'ante',this.value)">
+         </span>`
+      : `<span class="scoreboard-name" style="font-weight:400;">${blindLevelText(lvl)}</span>`;
+    return `<div class="scoreboard-row" style="${style} font-size:0.8rem; flex-wrap:wrap;">
+      ${moveBtns}
+      <span class="scoreboard-rank" style="color:${isCurrent?'var(--gold)':''};">${i+1}</span>
+      ${valuesField}
+      ${durationField}
+      ${removeBtn}
+    </div>`;
+  }).join('');
+}
+document.getElementById('blindFullAddLevelBtn').addEventListener('click', blindAddLevel);
+document.getElementById('blindFullAddBreakBtn').addEventListener('click', blindAddBreak);
+
+document.getElementById('blindPauseBtn').addEventListener('click', ()=>{
+  if(blindPlan.running){
+    blindPlan.pausedRemainingMs = Math.max(0, blindPlan.levelEndsAt - Date.now());
+    blindPlan.running = false;
+  } else {
+    blindPlan.levelEndsAt = Date.now() + (blindPlan.pausedRemainingMs||0);
+    blindPlan.running = true;
+  }
+  blindRenderClock();
+  blindSaveState();
+});
+document.getElementById('blindPlusBtn').addEventListener('click', ()=>{
+  if(blindPlan.running) blindPlan.levelEndsAt += 60000;
+  else blindPlan.pausedRemainingMs = (blindPlan.pausedRemainingMs||0) + 60000;
+  blindRenderClock();
+  blindSaveState();
+});
+document.getElementById('blindMinusBtn').addEventListener('click', ()=>{
+  if(blindPlan.running) blindPlan.levelEndsAt = Math.max(Date.now()+1000, blindPlan.levelEndsAt - 60000);
+  else blindPlan.pausedRemainingMs = Math.max(1000, (blindPlan.pausedRemainingMs||0) - 60000);
+  blindRenderClock();
+  blindSaveState();
+});
+document.getElementById('blindSkipBtn').addEventListener('click', ()=>{
+  blindAdvanceLevel(false);
+});
+document.getElementById('blindSoundBtn').addEventListener('click', function(){
+  blindPlan.soundOn = !blindPlan.soundOn;
+  this.textContent = blindPlan.soundOn ? '🔊 Ton an' : '🔇 Ton aus';
+  blindSaveState();
+});
+document.getElementById('blindFullscreenBtn').addEventListener('click', ()=>{
+  const el = document.getElementById('blindBigDisplay');
+  if(document.fullscreenElement) document.exitFullscreen();
+  else if(el.requestFullscreen) el.requestFullscreen();
+});
+document.addEventListener('fullscreenchange', ()=>{
+  const el = document.getElementById('blindBigDisplay');
+  el.classList.toggle('blind-fullscreen', !!document.fullscreenElement);
+});
+document.getElementById('blindResetBtn').addEventListener('click', ()=>{
+  if(!confirm('Zeitplan wirklich zurücksetzen? Der komplette Zeitplan geht verloren, nicht nur der laufende Timer.')) return;
+  clearInterval(blindPlan.tickHandle);
+  blindClearState();
+  blindPlan = { levels:[], currentIndex:-1, levelEndsAt:null, pausedRemainingMs:null, running:false, soundOn:true, tickHandle:null };
+  document.getElementById('blindClockView').style.display = 'none';
+  document.getElementById('blindSetupView').style.display = 'block';
+  document.getElementById('blindScheduleEditor').style.display = 'none';
+});
+document.getElementById('blindEndBtn').addEventListener('click', ()=>{
+  if(!confirm('Timer jetzt beenden? Der Zeitplan bleibt erhalten (z.B. für "Neu starten"), nur die laufende Uhr stoppt.')) return;
+  clearInterval(blindPlan.tickHandle);
+  blindPlan.running = false;
+  blindPlan.pausedRemainingMs = 0;
+  blindRenderClock(true);
+  blindSaveState();
+});
+document.getElementById('blindRestartBtn').addEventListener('click', ()=>{
+  if(!blindPlan.levels.length) return;
+  if(!confirm('Denselben Zeitplan von Level 1 neu starten? Aktueller Fortschritt geht verloren.')) return;
+  blindPlan.currentIndex = 0;
+  blindPlan.running = true;
+  blindPlan.levelEndsAt = Date.now() + blindPlan.levels[0].duration*60000;
+  blindPlan.pausedRemainingMs = null;
+  blindStartTicking();
+  blindRenderClock();
+  blindSaveState();
+});
+
+// Beim Laden prüfen, ob ein Zeitplan aus einer vorherigen Sitzung existiert
+// (z.B. nach versehentlichem Neuladen der Seite) und automatisch fortsetzen.
+(function blindInit(){
+  if(!blindLoadState()) return;
+  if(blindPlan.currentIndex>=0){
+    document.getElementById('blindSetupView').style.display = 'none';
+    document.getElementById('blindClockView').style.display = 'block';
+    document.getElementById('blindSoundBtn').textContent = blindPlan.soundOn ? '🔊 Ton an' : '🔇 Ton aus';
+    if(blindPlan.running) blindStartTicking();
+    blindRenderClock(blindPlan.currentIndex>=blindPlan.levels.length-1 && !blindPlan.running && blindPlan.pausedRemainingMs===0);
+  } else if(blindPlan.levels.length){
+    document.getElementById('blindScheduleEditor').style.display = 'block';
+    blindRenderScheduleEditor();
+  }
+})();
+// ---------------------------------------------------------------------
+// Live Event Planung — Unter-Navigation (Blinds / Spieler / Payout)
+// ---------------------------------------------------------------------
+function switchEventSub(tab){
+  ['Blinds','Players','Payout'].forEach(name=>{
+    const key = name.toLowerCase();
+    document.getElementById('eventSubPanel'+name).classList.toggle('active', key===tab);
+    document.getElementById('eventSubBtn'+name).classList.toggle('active', key===tab);
+  });
+  if(tab==='payout') eventRenderPayout();
+}
+document.getElementById('eventSubBtnBlinds').addEventListener('click', ()=>switchEventSub('blinds'));
+document.getElementById('eventSubBtnPlayers').addEventListener('click', ()=>switchEventSub('players'));
+document.getElementById('eventSubBtnPayout').addEventListener('click', ()=>switchEventSub('payout'));
+
+// ---------------------------------------------------------------------
+// Spieler-Tracking — Buy-ins/Rebuys und Ausscheidungs-Reihenfolge.
+// Die Platzierung ergibt sich automatisch: wer als Erstes ausscheidet,
+// bekommt den letzten Platz zugewiesen (Gegenteil von "1. Platz"), die
+// zuletzt verbleibende Person wird automatisch zur/zum Sieger:in erklärt.
+// ---------------------------------------------------------------------
+let eventPlayers = [];
+
+function eventSaveState(){
+  try{
+    localStorage.setItem('pokerabend_event_players', JSON.stringify(eventPlayers));
+    localStorage.setItem('pokerabend_payout_config', JSON.stringify({
+      buyIn: document.getElementById('payoutBuyInAmount').value,
+      rake: document.getElementById('payoutRakePercent').value,
+      override: document.getElementById('payoutPoolOverride').value,
+      paidPositions: document.getElementById('payoutPaidPositions').value,
+      splits: payoutSplits
+    }));
+  }catch(e){}
+}
+function eventLoadState(){
+  try{
+    const rawPlayers = localStorage.getItem('pokerabend_event_players');
+    if(rawPlayers) eventPlayers = JSON.parse(rawPlayers) || [];
+    const rawPayout = localStorage.getItem('pokerabend_payout_config');
+    if(rawPayout){
+      const cfg = JSON.parse(rawPayout);
+      if(cfg.buyIn!=null) document.getElementById('payoutBuyInAmount').value = cfg.buyIn;
+      if(cfg.rake!=null) document.getElementById('payoutRakePercent').value = cfg.rake;
+      if(cfg.override) document.getElementById('payoutPoolOverride').value = cfg.override;
+      if(cfg.paidPositions!=null) document.getElementById('payoutPaidPositions').value = cfg.paidPositions;
+      if(Array.isArray(cfg.splits) && cfg.splits.length) payoutSplits = cfg.splits;
+    }
+  }catch(e){}
+}
+
+function eventAddPlayer(){
+  const input = document.getElementById('eventPlayerName');
+  const name = input.value.trim();
+  if(!name) return;
+  eventPlayers.push({ id:'p'+Date.now()+Math.random().toString(36).slice(2,6), name, buyins:1, active:true, finishPosition:null });
+  input.value = '';
+  eventRenderPlayers();
+  eventSaveState();
+}
+document.getElementById('eventAddPlayerBtn').addEventListener('click', eventAddPlayer);
+document.getElementById('eventPlayerName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') eventAddPlayer(); });
+
+function eventChangeBuyins(id, delta){
+  const p = eventPlayers.find(x=>x.id===id);
+  if(!p) return;
+  p.buyins = Math.max(1, p.buyins + delta);
+  eventRenderPlayers();
+  eventSaveState();
+}
+function eventEliminatePlayer(id){
+  const p = eventPlayers.find(x=>x.id===id);
+  if(!p || !p.active) return;
+  const activeBefore = eventPlayers.filter(x=>x.active).length;
+  p.active = false;
+  p.finishPosition = activeBefore;
+  const stillActive = eventPlayers.filter(x=>x.active);
+  if(stillActive.length===1) stillActive[0].finishPosition = 1;
+  eventRenderPlayers();
+  eventSaveState();
+}
+function eventReactivatePlayer(id){
+  const p = eventPlayers.find(x=>x.id===id);
+  if(!p) return;
+  p.active = true;
+  p.finishPosition = null;
+  eventRenderPlayers();
+  eventSaveState();
+}
+function eventRemovePlayer(id){
+  eventPlayers = eventPlayers.filter(x=>x.id!==id);
+  eventRenderPlayers();
+  eventSaveState();
+}
+
+function eventRenderPlayers(){
+  const el = document.getElementById('eventPlayerList');
+  if(!eventPlayers.length){
+    el.innerHTML = '<p class="scan-hint">Noch keine Spieler eingetragen.</p>';
+  } else {
+    el.innerHTML = eventPlayers.map(p=>{
+      const posBadge = p.finishPosition ? `<span style="color:var(--gold); font-size:0.78rem; font-weight:700; white-space:nowrap;">${p.finishPosition===1?'🏆 1.':p.finishPosition+'.'} Platz</span>` : '';
+      return `<div class="scoreboard-row" style="flex-wrap:wrap; ${p.active?'':'opacity:0.5;'}">
+        <span class="scoreboard-name">${p.name}</span>
+        <span style="display:flex; align-items:center; gap:6px; font-size:0.8rem;">
+          Buy-ins:
+          <button onclick="eventChangeBuyins('${p.id}',-1)" style="background:none; border:1px solid rgba(201,162,75,0.4); color:var(--ink); border-radius:4px; width:22px; height:22px; cursor:pointer;">−</button>
+          ${p.buyins}
+          <button onclick="eventChangeBuyins('${p.id}',1)" style="background:none; border:1px solid rgba(201,162,75,0.4); color:var(--ink); border-radius:4px; width:22px; height:22px; cursor:pointer;">+</button>
+        </span>
+        ${posBadge}
+        ${p.active
+          ? `<button onclick="eventEliminatePlayer('${p.id}')" class="secondary-btn" style="padding:4px 10px; font-size:0.72rem;">Ausgeschieden</button>`
+          : `<button onclick="eventReactivatePlayer('${p.id}')" class="secondary-btn" style="padding:4px 10px; font-size:0.72rem;">Zurück ins Spiel</button>`}
+        <button onclick="eventRemovePlayer('${p.id}')" style="background:none; border:none; color:#e08a7a; font-size:1.1rem; cursor:pointer; padding:0 4px;">×</button>
+      </div>`;
+    }).join('');
+  }
+  const totalBuyins = eventPlayers.reduce((sum,p)=>sum+p.buyins,0);
+  const activeCount = eventPlayers.filter(p=>p.active).length;
+  document.getElementById('eventPlayerSummary').textContent = eventPlayers.length
+    ? `${eventPlayers.length} Spieler, ${activeCount} noch dabei · ${totalBuyins} Buy-ins gesamt`
+    : '';
+  eventRenderPayout();
+}
+
+// ---------------------------------------------------------------------
+// Payout-Rechner — Preispool aus den Buy-ins der Spielerliste (oder
+// manuell überschrieben), verteilt nach frei einstellbarer Prozent-Split.
+// ---------------------------------------------------------------------
+const PAYOUT_PRESETS = { 1:[100], 2:[65,35], 3:[50,30,20], 4:[45,25,18,12], 5:[40,22,16,12,10] };
+let payoutSplits = PAYOUT_PRESETS[3].slice();
+
+function payoutRenderSplitEditor(){
+  const n = parseInt(document.getElementById('payoutPaidPositions').value,10) || 3;
+  if(payoutSplits.length!==n) payoutSplits = (PAYOUT_PRESETS[n] || PAYOUT_PRESETS[3]).slice();
+  const sum = payoutSplits.reduce((a,b)=>a+b,0);
+  const el = document.getElementById('payoutSplitEditor');
+  el.innerHTML = `<div class="eyebrow" style="font-size:0.7rem;">Verteilung — Summe: ${sum}%${Math.round(sum)!==100?' (sollte 100% ergeben)':''}</div>` +
+    payoutSplits.map((pct,i)=>`
+      <div class="scoreboard-row">
+        <span class="scoreboard-rank">${i+1}.</span>
+        <input type="number" value="${pct}" min="0" max="100" style="width:70px;" onchange="payoutUpdateSplit(${i},this.value)">
+        <span class="scoreboard-wins">%</span>
+      </div>`).join('');
+}
+function payoutUpdateSplit(i, value){
+  payoutSplits[i] = Math.max(0, parseFloat(value) || 0);
+  eventRenderPayout();
+  eventSaveState();
+}
+document.getElementById('payoutPaidPositions').addEventListener('change', ()=>{ payoutRenderSplitEditor(); eventRenderPayout(); eventSaveState(); });
+['payoutBuyInAmount','payoutRakePercent','payoutPoolOverride'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{ eventRenderPayout(); eventSaveState(); });
+});
+
+function eventRenderPayout(){
+  payoutRenderSplitEditor();
+  const buyIn = parseFloat(document.getElementById('payoutBuyInAmount').value) || 0;
+  const rake = Math.min(100, Math.max(0, parseFloat(document.getElementById('payoutRakePercent').value) || 0));
+  const overrideVal = document.getElementById('payoutPoolOverride').value;
+  const totalBuyins = eventPlayers.reduce((sum,p)=>sum+p.buyins,0);
+  const isOverride = overrideVal!=='' && !isNaN(parseFloat(overrideVal));
+  const grossPool = isOverride ? parseFloat(overrideVal) : (buyIn * totalBuyins);
+  const netPool = grossPool * (1 - rake/100);
+
+  const byPosition = {};
+  eventPlayers.forEach(p=>{ if(p.finishPosition) byPosition[p.finishPosition] = p.name; });
+
+  const medals = ['🥇','🥈','🥉'];
+  const rows = payoutSplits.map((pct,i)=>{
+    const place = i+1;
+    const amount = netPool * pct/100;
+    const name = byPosition[place] ? ` — ${byPosition[place]}` : '';
+    return `<div class="scoreboard-row">
+      <span class="scoreboard-rank">${medals[i] || place+'.'}</span>
+      <span class="scoreboard-name">${place}. Platz${name}</span>
+      <span class="scoreboard-wins">${amount.toFixed(2)} € (${pct}%)</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('payoutResult').innerHTML = `
+    <p class="scan-hint">Preispool: <strong style="color:var(--gold);">${netPool.toFixed(2)} €</strong>${rake>0?` (nach ${rake}% Abzug von ${grossPool.toFixed(2)} €)`:''}${isOverride?' — manuell eingetragen':` — ${totalBuyins} Buy-ins × ${buyIn.toFixed(2)} €`}</p>
+    <div class="scoreboard-list" style="margin-top:8px;">${rows}</div>
+  `;
+}
+
+eventLoadState();
+eventRenderPlayers();
+
+// ---------------------------------------------------------------------
+// Gesamte Live Event Planung zurücksetzen — leert Blind-Zeitplan,
+// Spielerliste und Payout-Konfiguration in einem Schritt, für den
+// nächsten Pokerabend mit sauberem Stand.
+// ---------------------------------------------------------------------
+document.getElementById('eventResetAllBtn').addEventListener('click', ()=>{
+  if(!confirm('Gesamte Live Event Planung zurücksetzen? Das löscht den Blind-Zeitplan, die komplette Spielerliste (inkl. Buy-ins und Platzierungen) und setzt den Payout-Rechner auf Standardwerte zurück. Das lässt sich nicht rückgängig machen.')) return;
+
+  // Blinds
+  clearInterval(blindPlan.tickHandle);
+  blindClearState();
+  blindPlan = { levels:[], currentIndex:-1, levelEndsAt:null, pausedRemainingMs:null, running:false, soundOn:true, tickHandle:null };
+  document.getElementById('blindClockView').style.display = 'none';
+  document.getElementById('blindSetupView').style.display = 'block';
+  document.getElementById('blindScheduleEditor').style.display = 'none';
+
+  // Spieler
+  eventPlayers = [];
+  eventRenderPlayers();
+
+  // Payout auf Standardwerte
+  document.getElementById('payoutBuyInAmount').value = 20;
+  document.getElementById('payoutRakePercent').value = 0;
+  document.getElementById('payoutPoolOverride').value = '';
+  document.getElementById('payoutPaidPositions').value = 3;
+  payoutSplits = PAYOUT_PRESETS[3].slice();
+  eventRenderPayout();
+
+  eventSaveState();
+  switchEventSub('blinds');
+});
+
+// ---------------------------------------------------------------------
+// Zeitplan + Spielerliste als Text exportieren — zum Copy-Paste z.B. in
+// eine WhatsApp-Gruppe.
+// ---------------------------------------------------------------------
+function eventGenerateExportText(){
+  const dateStr = new Date().toLocaleDateString('de-DE');
+  const lines = [`🃏 Pokerabend – ${dateStr}`, ''];
+
+  if(blindPlan.levels.length){
+    lines.push('⏱️ Blind-Zeitplan:');
+    blindPlan.levels.forEach((lvl,i)=>{
+      if(lvl.type==='break'){
+        lines.push(`  ${i+1}. Pause — ${lvl.duration} Min`);
+      } else {
+        const anteStr = lvl.ante ? `, Ante ${lvl.ante}` : '';
+        lines.push(`  ${i+1}. ${lvl.sb}/${lvl.bb}${anteStr} — ${lvl.duration} Min`);
+      }
+    });
+    lines.push('');
+  }
+
+  if(eventPlayers.length){
+    lines.push('👥 Spieler:');
+    eventPlayers.forEach(p=>{
+      const status = p.active ? 'dabei' : (p.finishPosition ? `${p.finishPosition}. Platz` : 'ausgeschieden');
+      lines.push(`  ${p.name} — ${p.buyins} Buy-in${p.buyins===1?'':'s'} (${status})`);
+    });
+    lines.push('');
+  }
+
+  if(!blindPlan.levels.length && !eventPlayers.length){
+    lines.push('(Noch kein Zeitplan und keine Spieler eingetragen.)');
+  }
+
+  return lines.join('\n');
+}
+document.getElementById('eventExportBtn').addEventListener('click', ()=>{
+  document.getElementById('eventExportText').value = eventGenerateExportText();
+  document.getElementById('eventExportArea').style.display = 'block';
+});
+document.getElementById('eventExportCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('eventExportArea').style.display = 'none';
+});
+document.getElementById('eventExportCopyBtn').addEventListener('click', async ()=>{
+  const textarea = document.getElementById('eventExportText');
+  const btn = document.getElementById('eventExportCopyBtn');
+  const orig = btn.textContent;
+  try{
+    await navigator.clipboard.writeText(textarea.value);
+    btn.textContent = '✓ Kopiert!';
+  }catch(e){
+    textarea.select();
+    try{ document.execCommand('copy'); btn.textContent = '✓ Kopiert!'; }
+    catch(e2){ btn.textContent = 'Bitte manuell markieren & kopieren'; }
+  }
+  setTimeout(()=>{ btn.textContent = orig; }, 1800);
+});
+
+// ---------------------------------------------------------------------
+// Beim Laden der Seite prüfen, ob eine gespeicherte Online-Sitzung
+// existiert (z.B. nach einem Verbindungsabbruch + Neuladen der Seite,
+// nicht nur bei einem WebSocket-Abriss innerhalb derselben Seite) und
+// automatisch versuchen zurückzuverbinden, statt als neuer Spieler mit
+// frischen 1.000 Chips zu erscheinen.
+// ---------------------------------------------------------------------
+(function onlineRestoreSessionOnLoad(){
+  const session = onlineGetSession();
+  if(!session || !session.serverUrl || !session.code || !session.playerId) return;
+  switchMode('online');
+  document.getElementById('onlineConnectView').style.display = 'none';
+  onlineShowReconnectBanner('Verbindung wird wiederhergestellt…');
+  onlineAttemptReconnect();
+})();
 </script>
 </body>
 </html>
